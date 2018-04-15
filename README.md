@@ -1,5 +1,5 @@
-### khichdi
+### gotils
 
-A mixture of tooling of various kinds written in go.
+A mixture of tooling of various kinds written in golang.
 There is no plan on what kind of tooling this is supposed to contain.
 Only one thing is known at the moment, that the tooling will all be in golang.
