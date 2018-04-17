@@ -2,42 +2,55 @@ package main
 
 import (
 	"fmt"
-	"github.com/sumanmukherjee03/gotestbed/syslog"
-	"log"
 	"os"
-	"regexp"
+
+	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/sumanmukherjee03/gotils/cmd/logparser"
 )
 
-const GO_VERSION = "go1.8"
-
-func input() string {
-	var line string = "Mar 29 11:41:22 suman-mbp com.apple.xpc.launchd[1] (com.apple.nowplayingtouchui): Service  only ran for 0 seconds. Pushing respawn out by 10 seconds."
-	return line
-}
-
-func reverse(arr [5]int) [5]int {
-	for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
-		arr[i], arr[j] = arr[j], arr[i]
-	}
-	return arr
-}
-
-func init() {
-	var (
-		user   = os.Getenv("USER")
-		gopath = os.Getenv("GOPATH")
-		msg    string
-	)
-	if _, err := regexp.MatchString(".*go1.8.*", gopath); err != nil {
-		msg = fmt.Sprintf("$GOPATH %s for $USER %s is pointing to a wrong version of go. You will need version %s", gopath, user, GO_VERSION)
-		log.Fatal(msg)
-	}
-}
+var (
+	rootShortDesc = "Gotils is a single utilty to run various mixes of commands"
+	rootLongDesc  = `Gotils is a Flexible tool built with Go.
+	It does a mix of various things to help with developer and operations related work.`
+	cfgFile string
+	dryrun  bool
+)
 
 func main() {
-	inArr := [5]int{1, 2, 3, 4, 5}
-	outArr := reverse(inArr)
-	fmt.Println(outArr)
-	str := input()
-	fmt.Println(syslog.Parse(str))
+	var rootCmd = &cobra.Command{
+		Use:              "gotils [sub]",
+		Short:            rootShortDesc,
+		Long:             rootLongDesc,
+		TraverseChildren: true,
+	}
+
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotils.yaml)")
+	rootCmd.PersistentFlags().BoolVarP(&dryrun, "dryrun", "d", false, "dryrun")
+	rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+	viper.BindPFlag("useDryrun", rootCmd.PersistentFlags().Lookup("dryrun"))
+	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+	rootCmd.AddCommand(logparser.NewLogParser())
+	rootCmd.Execute()
+}
+
+func initConfig() {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		viper.AddConfigPath(home)
+		viper.SetConfigName(".gotils")
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Println("Can't read config:", err)
+		os.Exit(1)
+	}
 }
