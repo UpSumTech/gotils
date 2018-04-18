@@ -156,7 +156,7 @@ func dbStmtExecWithVals(str string, msg SyslogMsg) {
 
 func initDbStmts() []string {
 	sqlStmts := []string{
-		fmt.Sprintf("DROP TABLE IF EXISTS %s", dbName),
+		"DROP TABLE IF EXISTS parsed_data",
 		fmt.Sprintf("CREATE TABLE `parsed_data` (`uid` INT(10) NOT NULL AUTO_INCREMENT, `priority` INT(10) NOT NULL, `facility` INT(10) NOT NULL, `severity` INT(10) NOT NULL, `name` VARCHAR(64) NOT NULL, `hostname` VARCHAR(64) NOT NULL, `message` VARCHAR(256) NOT NULL, `timestamp` DATETIME NOT NULL, PRIMARY KEY (`uid`))"),
 	}
 	return sqlStmts
