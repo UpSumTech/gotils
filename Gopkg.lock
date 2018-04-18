@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  revision = "3287d94d4c6a48a63e16fffaabf27ab20203af2a"
+
+[[projects]]
+  branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
     ".",
@@ -123,6 +129,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -131,6 +143,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b5a18c8c3444d073c7b4f80bb81ab2ba68d6b8306db801b089b9646359debe49"
+  inputs-digest = "236ee58f5da68c2d9c68564ea29304895947b2107b0a3f46ea15cdc676fec0c5"
   solver-name = "gps-cdcl"
   solver-version = 1

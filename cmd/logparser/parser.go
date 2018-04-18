@@ -2,10 +2,12 @@ package logparser
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 )
 
@@ -16,10 +18,16 @@ var (
 	parseExample = `
 	### Available commands for parse
 	gotils parse syslog`
-	supporttedParsers = map[string]func(line string) string{
-		"syslog": parseSyslog,
+	supportedParsers = map[string]func(line string) SyslogMsg{
+		"syslog": ParseSyslog,
 	}
-	src string
+	src      string
+	dbUser   string
+	dbPasswd string
+	dbName   string
+	dbHost   string
+	dbPort   string
+	db       *sql.DB
 )
 
 func NewLogParser() *cobra.Command {
@@ -50,14 +58,41 @@ func NewLogParser() *cobra.Command {
 			}
 			return nil
 		},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			dbUser = viper.GetString("logparser.db.user")
+			dbPasswd = viper.GetString("logparser.db.passwd")
+			dbName = viper.GetString("logparser.db.name")
+			dbHost = viper.GetString("logparser.db.host")
+			dbPort = viper.GetString("logparser.db.port")
+		},
 		Run: func(cmd *cobra.Command, args []string) {
+			db = dbConn()
+			defer db.Close()
+			stmts := initDbStmts()
+			for _, stmt := range stmts {
+				dbStmtExec(stmt)
+			}
 			readLogFile(args[0], src)
 		},
 	}
 
 	cmd.Flags().StringVarP(&src, "src", "s", "", "Full path to the input file")
 	cmd.MarkFlagRequired("src")
+	cmd.Flags().StringVarP(&dbUser, "dbuser", "", "", "User name to use with the database")
+	cmd.Flags().StringVarP(&dbPasswd, "dbpasswd", "", "", "Password to use with the database")
+	cmd.Flags().StringVarP(&dbName, "dbname", "", "", "Name of the database")
+	cmd.Flags().StringVarP(&dbHost, "dbhost", "", "", "Host of the database")
+	cmd.Flags().StringVarP(&dbPort, "dbport", "", "", "Port of the database")
+	viper.BindPFlag("logparser.db.user", cmd.Flags().Lookup("dbuser"))
+	viper.BindPFlag("logparser.db.passwd", cmd.Flags().Lookup("dbpasswd"))
+	viper.BindPFlag("logparser.db.name", cmd.Flags().Lookup("dbname"))
+	viper.BindPFlag("logparser.db.host", cmd.Flags().Lookup("dbname"))
+	viper.BindPFlag("logparser.db.port", cmd.Flags().Lookup("dbname"))
 	return cmd
+}
+
+func Parse(kind string, line string) SyslogMsg {
+	return supportedParsers[kind](line)
 }
 
 ////////////////////////// Unexported funcs //////////////////////////
@@ -71,7 +106,9 @@ func readLogFile(kind string, fname string) {
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fmt.Println(parse(kind, scanner.Text()))
+		msg := Parse(kind, scanner.Text())
+		sql := "INSERT INTO parsed_data SET priority=?,facility=?,severity=?,name=?,hostname=?,message=?,timestamp=?"
+		dbStmtExecWithVals(sql, msg)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -79,6 +116,48 @@ func readLogFile(kind string, fname string) {
 	}
 }
 
-func parse(k string, s string) string {
-	return supporttedParsers[k](s)
+func dbConn() *sql.DB {
+	db, err := sql.Open("mysql", dbUser+":"+dbPasswd+"@"+"tcp"+"("+dbHost+":"+dbPort+")"+"/"+dbName)
+	if err != nil {
+		utils.CheckErr(err.Error())
+	}
+	return db
+}
+
+func dbStmtExec(str string) {
+	stmt, err := db.Prepare(str)
+	if err != nil {
+		utils.CheckErr(err.Error())
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec()
+	if err != nil {
+		utils.CheckErr(err.Error())
+	}
+}
+
+func dbStmtExecWithVals(str string, msg SyslogMsg) {
+	stmt, err := db.Prepare(str)
+	if err != nil {
+		utils.CheckErr(err.Error())
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(msg.Priority,
+		msg.Facility,
+		msg.Severity,
+		msg.Name,
+		msg.Hostname,
+		msg.Message,
+		msg.Timestamp)
+	if err != nil {
+		utils.CheckErr(err.Error())
+	}
+}
+
+func initDbStmts() []string {
+	sqlStmts := []string{
+		fmt.Sprintf("DROP TABLE IF EXISTS %s", dbName),
+		fmt.Sprintf("CREATE TABLE `parsed_data` (`uid` INT(10) NOT NULL AUTO_INCREMENT, `priority` INT(10) NOT NULL, `facility` INT(10) NOT NULL, `severity` INT(10) NOT NULL, `name` VARCHAR(64) NOT NULL, `hostname` VARCHAR(64) NOT NULL, `message` VARCHAR(256) NOT NULL, `timestamp` DATETIME NOT NULL, PRIMARY KEY (`uid`))"),
+	}
+	return sqlStmts
 }

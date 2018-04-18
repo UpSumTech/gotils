@@ -16,6 +16,10 @@
   branch = "master"
   name = "github.com/jeromer/syslogparser"
 
+[[ constraint ]]
+  branch = "master"
+  name = "github.com/go-sql-driver/mysql"
+
 # [[ constraint ]]
   # name = "golang.org/x/crypto"
 
