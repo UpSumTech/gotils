@@ -30,7 +30,7 @@ var (
 	db       *sql.DB
 )
 
-func NewLogParser() *cobra.Command {
+func InitLogParser() *cobra.Command {
 	validLogTypes := []string{
 		"syslog",
 	}

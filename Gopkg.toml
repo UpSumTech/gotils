@@ -20,6 +20,10 @@
   branch = "master"
   name = "github.com/go-sql-driver/mysql"
 
+[[ constraint ]]
+  branch = "master"
+  name = "github.com/awslabs/goformation"
+
 # [[ constraint ]]
   # name = "golang.org/x/crypto"
 

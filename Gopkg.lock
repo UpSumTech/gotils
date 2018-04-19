@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/awslabs/goformation"
+  packages = ["cloudformation"]
+  revision = "b4cec4bda6d805728b7dba92814be0bbfef215d0"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -69,6 +75,12 @@
   packages = ["."]
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/sanathkr/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -143,6 +155,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "236ee58f5da68c2d9c68564ea29304895947b2107b0a3f46ea15cdc676fec0c5"
+  inputs-digest = "cc8d1e37753e8bccb7a5c3bea0adc7c9b3af5fa8a3187b2d401a15998075a9f9"
   solver-name = "gps-cdcl"
   solver-version = 1
