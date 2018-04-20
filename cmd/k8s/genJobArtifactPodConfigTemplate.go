@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"strings"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,26 +15,26 @@ import (
 func GenArtifactBuilderPodTemplate() (string, error) {
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "demo-deployment",
+			Name: strings.Join([]string{imageName, "deployment"}, "-"),
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: utils.Int32Ptr(2),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "demo",
+					"app": imageName,
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "demo",
+						"app": imageName,
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  "web",
-							Image: "nginx:1.12",
+							Name:  imageName,
+							Image: strings.Join([]string{imageName, imageTag}, ":"),
 							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http",
