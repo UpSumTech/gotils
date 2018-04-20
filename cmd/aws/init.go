@@ -44,5 +44,3 @@ func InitAws() *cobra.Command {
 	viper.BindPFlag("aws.region", cmd.Flags().Lookup("aws_region"))
 	return cmd
 }
-
-////////////////////////// Unexported funcs //////////////////////////
