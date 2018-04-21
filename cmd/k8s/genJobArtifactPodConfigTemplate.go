@@ -13,6 +13,12 @@ import (
 )
 
 func GenArtifactBuilderPodTemplate() (string, error) {
+	var data string
+
+	if appPort == 0 {
+		return data, utils.RaiseErr("Missing the port number")
+	}
+
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: strings.Join([]string{imageName, "deployment"}, "-"),
@@ -39,7 +45,7 @@ func GenArtifactBuilderPodTemplate() (string, error) {
 								{
 									Name:          "http",
 									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: 80,
+									ContainerPort: *utils.Int32Ptr(appPort),
 								},
 							},
 						},

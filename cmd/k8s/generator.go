@@ -26,6 +26,7 @@ var (
 	namespace string
 	imageName string
 	imageTag  string
+	appPort   int
 )
 
 func NewK8sGenerator() *cobra.Command {
@@ -59,6 +60,7 @@ func NewK8sGenerator() *cobra.Command {
 	cmd.MarkFlagRequired("image")
 	cmd.Flags().StringVarP(&imageTag, "tag", "", "", "Docker image tag")
 	cmd.MarkFlagRequired("tag")
+	cmd.Flags().IntVarP(&appPort, "port", "", 0, "Application port to be exposed")
 	return cmd
 }
 
