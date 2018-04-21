@@ -23,7 +23,6 @@ var (
 		ARTIFACT_BUILDER_POD: GenArtifactBuilderPodTemplate,
 	}
 	dest      string
-	name      string
 	namespace string
 	imageName string
 	imageTag  string
@@ -55,8 +54,7 @@ func NewK8sGenerator() *cobra.Command {
 	cmd.Flags().StringVarP(&dest, "dest", "d", "", "Full path to the output file")
 	cmd.MarkFlagRequired("dest")
 	cmd.Flags().StringVarP(&namespace, "namespace", "", "", "Namespace on which to perform the operations")
-	cmd.Flags().StringVarP(&name, "name", "", "", "Name to use for the k8s object")
-	cmd.MarkFlagRequired("name")
+	cmd.MarkFlagRequired("namespace")
 	cmd.Flags().StringVarP(&imageName, "image", "", "", "Docker image name")
 	cmd.MarkFlagRequired("image")
 	cmd.Flags().StringVarP(&imageTag, "tag", "", "", "Docker image tag")
