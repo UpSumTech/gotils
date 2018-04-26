@@ -47,7 +47,7 @@ WIP := 0
 HOTFIX := 0
 
 ifdef DEPLOY_GITHUB_TOKEN
-	GITHUB_REPO := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GIT_REPO_OWNER)/$(GIT_REPO_NAME).git
+	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GIT_REPO_OWNER)/$(REPO_NAME).git
 else
 	$(error "ERROR : Please export DEPLOY_GITHUB_TOKEN to your shell")
 endif
@@ -116,15 +116,17 @@ build : $(BUILD_DEPENDENT_TARGETS) Dockerfile $(APPLICATION_FILES)
 ifeq ($(IS_TAG_FROM_CLI), 0)
 	$(info [INFO] --- Build and tag container from commit sha)
 	$(AT)cd $(TMPDIR_FOR_BUILD) \
-		&& git clone $(GITHUB_REPO) \
+		&& git clone $(GIT_REPO_URL) \
 		&& cd $(REPO_NAME) \
 		&& git checkout $(GIT_SHA) \
 		&& docker build \
 			--build-arg GIT_TAG=$(TAG) \
 			--build-arg BUILD_TIME=$(BUILD_TIME) \
-			--build-arg GIT_REF="$(GITHUB_REPO)#$(GIT_SHA)" \
+			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
+			--build-arg BUILD_USER="$(USER)" \
 			-f Dockerfile \
-			-t $(REPO_NAME):$(TAG) .
+			-t $(REPO_NAME):$(TAG) \
+			"$(GIT_REPO_URL)#$(GIT_SHA)"
 	$(AT)docker tag $(REPO_NAME):$(TAG) $(DOCKERHUB_OWNER)/$(REPO_NAME):$(TAG)
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
@@ -138,7 +140,7 @@ endif
 release: build
 	$(info [INFO] --- Create release candidate)
 	$(AT)cd $(TMPDIR_FOR_BUILD) \
-		&& git clone $(GITHUB_REPO) \
+		&& git clone $(GIT_REPO_URL) \
 		&& cd $(REPO_NAME) \
 		&& git checkout $(GIT_SHA)
 	$(AT)docker push $(DOCKERHUB_OWNER)/$(REPO_NAME):$(TAG)
@@ -196,7 +198,7 @@ check_working_dir_status :
 	$(AT)git symbolic-ref --short --quiet HEAD \
 	&& git diff-index --quiet HEAD -- \
 	&& git status -uno | grep 'up-to-date' \
-	&& ! git show-ref --tags | grep -v -F "$$(git ls-remote --tags $(GITHUB_REPO) | grep -v '\^{}' | cut -f2)"
+	&& ! git show-ref --tags | grep -v -F "$$(git ls-remote --tags $(GIT_REPO_URL) | grep -v '\^{}' | cut -f2)"
 
 # Checks if you have the WIP flag enabled then you are not on stable branches like master or develop
 # Checks that if you have a HOTFIX flag enabled then you are on a hotfix branch
@@ -231,7 +233,7 @@ endif
 check_no_existing_tag_on_remote :
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the new tag does not exist on git remote or on remote docker repo)
-	$(AT)! git ls-remote --tags $(GITHUB_REPO) | grep '$(TAG)'
+	$(AT)! git ls-remote --tags $(GIT_REPO_URL) | grep '$(TAG)'
 
 # Check for git tag locally
 # Check for docker tag locally
@@ -262,7 +264,7 @@ check_existing_docker_tag :
 check_existing_git_tag :
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the tag passed from the cli exists on git locally or on git repo on remote)
-	$(AT)git ls-remote --tags $(GITHUB_REPO) | grep '$(TAG)' \
+	$(AT)git ls-remote --tags $(GIT_REPO_URL) | grep '$(TAG)' \
 	|| git tag | grep '$(TAG)'
 
 checks_for_existing_build : check_deps check_existing_docker_tag check_existing_git_tag
@@ -270,6 +272,7 @@ checks_for_existing_build : check_deps check_existing_docker_tag check_existing_
 $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
 	$(AT)mkdir -p .make
+	$(AT)command -v go || { echo "ERROR >> golang is not installed or not in your path"; exit 1; }
 	$(AT)command -v dep >/dev/null 2>&1 || go get -u github.com/golang/dep/cmd/dep
 	$(AT)dep ensure
 	$(AT)touch $(DEPS_STATEFILE)

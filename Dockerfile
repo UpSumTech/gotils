@@ -1,9 +1,13 @@
 FROM ubuntu:16.04
 LABEL "os"="ubuntu" \
-  "os_version"="16.04" \
-  "golang_version"="1.10" \
-  "author_name"="Suman Mukherjee" \
-  "author_email"="sumanmukherjee03@gmail.com"
+  os_version="16.04" \
+  golang_version="1.10" \
+  author_name="Suman Mukherjee" \
+  author_email="sumanmukherjee03@gmail.com" \
+  version="$GIT_TAG" \
+  build_time="$BUILD_TIME" \
+  git_ref="$GIT_REF" \
+  build_user="$USER"
 
 ENV BUILD_HOME=/go/src/github.com/sumanmukherjee03/gotils \
   GOPATH="/go" \
@@ -35,8 +39,6 @@ RUN set -ex; \
     && apt-get clean -y; \
   mkdir -p $BUILD_HOME
 
-WORKDIR $BUILD_HOME
-
 RUN set -ex; \
     [[ ! -d "vendor" ]] \
       && go get -u github.com/golang/dep/cmd/dep \
@@ -44,3 +46,5 @@ RUN set -ex; \
     go env; \
     command -v dep; \
     command -v gox
+
+WORKDIR $BUILD_HOME
