@@ -67,8 +67,7 @@ endif
 
 APPLICATION_FILES := $(call rfind,cmd/,**/*) \
 	$(ROOT_DIR)/Gopkg.toml \
-	$(ROOT_DIR)/Gopkg.toml \
-	$(ROOT_DIR)/.env
+	$(ROOT_DIR)/Gopkg.toml
 
 DEPS_STATEFILE = .make/done_deps
 
