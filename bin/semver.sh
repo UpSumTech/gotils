@@ -45,8 +45,9 @@ bumpSemver() {
 }
 
 main() {
-  local semver="$1"
-  local version="$2"
+  local version="$1"
+  local semver="$2"
+  [[ "x$semver" == "x" ]] && semver='v0.0.0'
   bumpSemver "$semver" "$version"
   echo "v${MAJOR}.${MINOR}.${PATCH}"
 }

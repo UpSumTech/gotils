@@ -94,7 +94,7 @@ ifeq ($(HOTFIX),1)
 else
 	# If not a hotfix then valid values can be <patch|minor|major>
 	VERSION := $(PATCH)
-	TAG := $(shell /usr/bin/env bash $(ROOT_DIR)/bin/semver.sh $(PREVIOUS_RELEASE_TAG)) $(VERSION)
+	TAG := $(shell /usr/bin/env bash $(ROOT_DIR)/bin/semver.sh $(VERSION) $(PREVIOUS_RELEASE_TAG))
 endif
 endif
 
