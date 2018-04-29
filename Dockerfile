@@ -55,5 +55,5 @@ COPY Gopkg.lock Gopkg.lock
 COPY main.go main.go
 COPY cmd cmd/
 RUN set -ex; \
-  CGO_ENABLED=0 gox build -a -tags netgo -ldflags '-w -extldflags "-static"' -o gotils *.go; \
+  CGO_ENABLED=0 gox -a -tags netgo -ldflags '-w -extldflags "-static"' -o gotils *.go; \
   ls -lah .
