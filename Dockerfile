@@ -7,7 +7,7 @@ LABEL "os"="ubuntu" \
   version="$GIT_TAG" \
   build_time="$BUILD_TIME" \
   git_ref="$GIT_REF" \
-  github_user="$GITHUB_USERNAME"
+  github_user="$GITHUB_USERNAME" \
   build_user="$USER"
 
 ENV BUILD_HOME="/go/src/github.com/$GITHUB_USERNAME/gotils" \
