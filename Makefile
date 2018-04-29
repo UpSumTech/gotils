@@ -109,9 +109,11 @@ endif
 	release \
 	clean
 
+# Installs all the dependencies for running the build process
 deps : $(DEPS_STATEFILE)
 	$(info [INFO] --- Install dependencies for running make targets)
 
+# Builds the artifacts inside a docker container
 build : $(BUILD_DEPENDENT_TARGETS) Dockerfile $(APPLICATION_FILES)
 	$(AT)echo "Was $(TAG) passed from the cli? - $(IS_TAG_FROM_CLI)"
 ifeq ($(IS_TAG_FROM_CLI), 0)
@@ -152,6 +154,7 @@ release: build
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 
+# Cleans unused dirs/images/containers
 clean :
 	$(info [INFO] --- Clean stopped containers, intermediate images and build artifacts)
 ifneq ($(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)"),)

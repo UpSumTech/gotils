@@ -54,8 +54,6 @@ RUN set -ex; \
 
 WORKDIR $BUILD_HOME
 
-VOLUME $BUILD_DATA
-
 COPY Gopkg.toml Gopkg.toml
 COPY Gopkg.lock Gopkg.lock
 COPY main.go main.go
