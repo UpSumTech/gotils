@@ -167,6 +167,7 @@ help :
 ##########################################################################################
 ## Plumbing
 .PHONY : check_deps \
+	checks_for_env_vars \
 	check_working_dir_status \
 	check_branch \
 	check_no_existing_tag_on_commit \
@@ -175,7 +176,6 @@ help :
 	checks_for_new_build \
 	check_existing_docker_tag \
 	checks_for_existing_build \
-	checks_for_env_vars \
 	checks_logged_into_dockerhub
 
 # Checks for dependencies
@@ -189,6 +189,12 @@ check_deps:
 	&& command -v git \
 	&& command -v jq \
 	&& command -v xargs
+
+# Checks that required env vars are present
+checks_for_env_vars :
+	$(info [INFO] --- Checks that required env vars are present)
+	$(AT)test ! -z "$$GITHUB_USERNAME" \
+	&& test ! -z "$$DOCKERHUB_USERNAME"
 
 # Checks is HEAD is detached
 # Checks if there are uncommited changes
@@ -270,11 +276,9 @@ check_existing_git_tag :
 
 checks_for_existing_build : check_deps check_existing_docker_tag check_existing_git_tag checks_for_env_vars checks_logged_into_dockerhub
 
-checks_for_env_vars :
-	$(AT)test ! -z "$$GITHUB_USERNAME" \
-	&& test ! -z "$$DOCKERHUB_USERNAME"
-
+# Checks that user is logged into dockerhub
 checks_logged_into_dockerhub :
+	$(info [INFO] --- Checks that user is logged into dockerhub)
 	$(AT)test -d "$$HOME/.docker" \
 	&& test ! -z "$$(cat "$$HOME/.docker/config.json" | jq -r '.auths | .[] | .auth')"
 
