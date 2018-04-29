@@ -45,6 +45,7 @@ REPO_NAME := $(shell basename $(ROOT_DIR))
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 WIP := 0
 HOTFIX := 0
+BINTRAY_API_URL="https://api.bintray.com"
 
 ifdef DEPLOY_GITHUB_TOKEN
 	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git
@@ -107,7 +108,8 @@ endif
 	help \
 	build \
 	release \
-	clean
+	clean \
+	fullclean
 
 # Installs all the dependencies for running the build process
 deps : $(DEPS_STATEFILE)
@@ -131,12 +133,8 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			-f Dockerfile \
 			-t $(BUILDER_IMAGE_NAME):$(TAG) \
 			"$(GIT_REPO_URL)#$(GIT_SHA)"
-	$(AT)docker container create --name $(BUILDER_CONTAINER_NAME) $(BUILDER_IMAGE_NAME):$(TAG) \
-		&& docker container cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz $(TMPDIR_FOR_BUILD)/gotils.tar.gz \
-		&& docker container rm -f $(BUILDER_CONTAINER_NAME) \
-		&& ls -lah $(TMPDIR_FOR_BUILD)
-	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
+	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
 else
 	$(info [INFO] --- Skipping building and tagging container from commit sha)
@@ -144,13 +142,16 @@ else
 endif
 	$(AT)rm -rf $(TMPDIR_FOR_BUILD)
 
-# Uploads the artifact built from the code and the git tag
+# Uploads the artifact built from the code to bintray
+# Pushes the docker image to dockerhub
+# Pushes the git tag
 release: build
 	$(info [INFO] --- Create release candidate)
-	$(AT)cd $(TMPDIR_FOR_BUILD) \
-		&& git clone $(GIT_REPO_URL) \
-		&& cd $(REPO_NAME) \
-		&& git checkout $(GIT_SHA)
+	$(AT)mkdir -p dist
+	$(AT)docker container create --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
+		&& docker container cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz dist/gotils-$(TAG).tar.gz \
+		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
+		&& docker container rm -f $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 
@@ -165,6 +166,8 @@ ifneq ($(shell docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | a
 	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}' | xargs docker rmi || echo
 endif
 	$(AT)rm -rf $(ROOT_DIR)/dist
+
+fullclean : clean
 	$(AT)rm -rf .make
 
 help :
@@ -204,7 +207,21 @@ check_deps:
 checks_for_env_vars :
 	$(info [INFO] --- Checks that required env vars are present)
 	$(AT)test ! -z "$$GITHUB_USERNAME" \
-	&& test ! -z "$$DOCKERHUB_USERNAME"
+	&& test ! -z "$$DOCKERHUB_USERNAME" \
+	&& test ! -z "$$BINTRAY_USERNAME" \
+	&& test ! -z "$$BINTRAY_REPO_NAME" \
+	&& test ! -z "$$BINTRAY_API_KEY"
+
+# Checks that bintray repo is present
+checks_bintray_repo :
+	$(info [INFO] --- Checks that bintray repo is present)
+	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/repos/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME) | grep -i 'was not found'
+
+# Checks that bintray package is present or create one
+checks_or_makes_bintray_package :
+	$(info [INFO] --- Checks that bintray repo is present)
+	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME) | grep -i 'was not found' \
+	|| curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -H "Content-Type: application/json" -H "Accept: application/json" -d '{"name": "$(REPO_NAME)", "licenses": ["MIT"], "vcs_url": "https://github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)
 
 # Checks is HEAD is detached
 # Checks if there are uncommited changes
@@ -267,7 +284,7 @@ check_no_existing_tag_locally :
 # Check if there are any existing tags already for the commit you are trying to build from
 # Check new tag is not already on remote on git
 # Check new tag is not already on docker repo
-checks_for_new_build : check_deps check_working_dir_status check_branch check_no_existing_tag_on_commit check_no_existing_tag_on_remote check_no_existing_tag_locally checks_for_env_vars checks_logged_into_dockerhub
+checks_for_new_build : check_deps check_working_dir_status check_branch check_no_existing_tag_on_commit check_no_existing_tag_on_remote check_no_existing_tag_locally checks_for_env_vars checks_bintray_repo checks_or_makes_bintray_package checks_logged_into_dockerhub
 
 # Check for docker tag locally
 # Check for docker tag on remote
