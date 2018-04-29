@@ -7,12 +7,13 @@ LABEL "os"="ubuntu" \
   version="$GIT_TAG" \
   build_time="$BUILD_TIME" \
   git_ref="$GIT_REF" \
+  github_user="$GITHUB_USERNAME"
   build_user="$USER"
 
-ENV BUILD_HOME=/go/src/github.com/sumanmukherjee03/gotils \
+ENV BUILD_HOME="/go/src/github.com/$GITHUB_USERNAME/gotils" \
   GOPATH="/go" \
   PATH="/go/bin:/usr/lib/go-1.10/bin:$PATH" \
-  DEBIAN_FRONTEND=noninteractive \
+  DEBIAN_FRONTEND="noninteractive" \
   CONFIGURE_OPTS="--disable-install-doc" \
   MAKEFLAGS="-j$(($(nproc) + 1))"
 
@@ -48,3 +49,11 @@ RUN set -ex; \
     command -v gox
 
 WORKDIR $BUILD_HOME
+
+COPY Gopkg.toml Gopkg.toml
+COPY Gopkg.lock Gopkg.lock
+COPY main.go main.go
+COPY cmd cmd/
+RUN set -ex; \
+  CGO_ENABLED=0 gox build -a -tags netgo -ldflags '-w -extldflags "-static"' -o gotils *.go; \
+  ls -lah .
