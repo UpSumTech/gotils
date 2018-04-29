@@ -150,7 +150,8 @@ release: build
 	$(AT)mkdir -p dist
 	$(AT)docker container create --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
 		&& docker container cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz dist/gotils-$(TAG).tar.gz \
-		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
+		&& curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"name": "$(TAG)", "vcs_tag": "$(TAG)", "released": "$(BUILD_TIME)"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/versions \
+		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1 \
 		&& docker container rm -f $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
@@ -162,8 +163,8 @@ ifneq ($(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)"),)
 	$(AT)docker stop $(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)")
 	$(AT)docker rm $(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)")
 endif
-ifneq ($(shell docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}'),)
-	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}' | xargs docker rmi || echo
+ifneq ($(shell docker images | egrep -i "($(BUILDER_IMAGE_NAME)|none)" | awk '{print $$3}'),)
+	$(AT)docker images | egrep -i "($(BUILDER_IMAGE_NAME)|none)" | awk '{print $$3}' | xargs docker rmi -f || echo
 endif
 	$(AT)rm -rf $(ROOT_DIR)/dist
 
