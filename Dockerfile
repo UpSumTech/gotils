@@ -63,7 +63,7 @@ COPY cmd cmd/
 
 RUN set -ex; \
   dep ensure; \
-  CGO_ENABLED=0 gox -os='linux darwin' -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
+  CGO_ENABLED=0 gox -osarch='linux/amd64 linux/386 darwin/amd64 darwin/386' -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
   mv gotils_linux_* $BUILD_DATA; \
   mv gotils_darwin_* $BUILD_DATA; \
   tar czf gotils.tar.gz $BUILD_DATA/gotils_linux_* $BUILD_DATA/gotils_darwin_*
