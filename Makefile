@@ -57,6 +57,8 @@ PREVIOUS_RELEASE_TAG := $(shell git describe --tags --match '$(SEMVER_REGEX)' --
 GIT_SHA := $(shell git rev-parse --short --verify HEAD)
 BUILD_TIME := $(shell date --utc +"%Y-%m-%d-%H-%M-%S-UTC")
 TMPDIR_FOR_BUILD :=$(shell mktemp -d "/tmp/$(REPO_NAME).XXXXXXX")
+BUILDER_IMAGE_NAME := $(REPO_NAME)-builder
+BUILDER_CONTAINER_NAME := $(BUILDER_IMAGE_NAME)-container
 
 # This is programatically set if a TAG is passed from the cli
 IS_TAG_FROM_CLI := 0
@@ -125,9 +127,13 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
 			--build-arg BUILD_USER="$(USER)" \
 			-f Dockerfile \
-			-t $(REPO_NAME):$(TAG) \
+			-t $(BUILDER_IMAGE_NAME):$(TAG) \
 			"$(GIT_REPO_URL)#$(GIT_SHA)"
-	$(AT)docker tag $(REPO_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(REPO_NAME):$(TAG)
+	$(AT)docker container create --name $(BUILDER_CONTAINER_NAME) $(BUILDER_IMAGE_NAME):$(TAG) \
+		&& docker container cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz $(TMPDIR_FOR_BUILD)/gotils.tar.gz \
+		&& docker container rm -f $(BUILDER_CONTAINER_NAME) \
+		&& ls -lah $(TMPDIR_FOR_BUILD)
+	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
 else
@@ -143,17 +149,17 @@ release: build
 		&& git clone $(GIT_REPO_URL) \
 		&& cd $(REPO_NAME) \
 		&& git checkout $(GIT_SHA)
-	$(AT)docker push $(DOCKERHUB_USERNAME)/$(REPO_NAME):$(TAG)
+	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 
 clean :
 	$(info [INFO] --- Clean stopped containers, intermediate images and build artifacts)
-ifneq ($(shell docker ps -a -q | grep -i "$(REPO_NAME)"),)
-	$(AT)docker stop $(shell docker ps -a -q | grep -i "$(REPO_NAME)")
-	$(AT)docker rm $(shell docker ps -a -q | grep -i "$(REPO_NAME)")
+ifneq ($(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)"),)
+	$(AT)docker stop $(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)")
+	$(AT)docker rm $(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)")
 endif
-ifneq ($(shell docker images | grep -i "$(REPO_NAME)" | grep 'none' | awk '{print $$3}'),)
-	$(AT)docker images | grep -i "$(REPO_NAME)" | grep 'none' | awk '{print $$3}' | xargs docker rmi || echo
+ifneq ($(shell docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}'),)
+	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}' | xargs docker rmi || echo
 endif
 	$(AT)rm -rf $(ROOT_DIR)/dist
 	$(AT)rm -rf .make
@@ -249,7 +255,7 @@ check_no_existing_tag_locally :
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the new tag does not exist on git locally or on docker client locally)
 	$(AT)! git tag | grep '$(TAG)' \
-	&& ! docker images | grep -i "$(REPO_NAME)" | grep "$(TAG)"
+	&& ! docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep "$(TAG)"
 
 # Checks to pass for the new build
 # Checks that all dependencies required to build the release exist
@@ -265,7 +271,7 @@ checks_for_new_build : check_deps check_working_dir_status check_branch check_no
 check_existing_docker_tag :
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the tag passed from the cli exists on docker client locally or on docker repo on remote)
-	$(AT)docker images | grep -i "$(REPO_NAME)" | grep "$(TAG)"
+	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep "$(TAG)"
 
 # Check for git tag locally
 # Check for git tag on remote
