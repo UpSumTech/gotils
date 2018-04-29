@@ -11,6 +11,7 @@ LABEL "os"="ubuntu" \
   build_user="$USER"
 
 ENV BUILD_HOME="/go/src/github.com/$GITHUB_USERNAME/gotils" \
+  BUILD_DATA="/var/data" \
   GOPATH="/go" \
   PATH="/go/bin:/usr/lib/go-1.10/bin:$PATH" \
   DEBIAN_FRONTEND="noninteractive" \
@@ -27,6 +28,9 @@ RUN set -ex; \
     ca-certificates \
     gcc \
     git \
+    tar \
+    zip \
+    unzip \
     autoconf \
     make \
     cmake \
@@ -37,10 +41,10 @@ RUN set -ex; \
     libtool \
     golang-1.10-go; \
   apt-get autoremove -y \
-    && apt-get clean -y; \
-  mkdir -p $BUILD_HOME
+    && apt-get clean -y
 
 RUN set -ex; \
+    mkdir -p $BUILD_HOME; \
     [[ ! -d "vendor" ]] \
       && go get -u github.com/golang/dep/cmd/dep \
       && go get -u github.com/mitchellh/gox; \
@@ -50,11 +54,16 @@ RUN set -ex; \
 
 WORKDIR $BUILD_HOME
 
+VOLUME $BUILD_DATA
+
 COPY Gopkg.toml Gopkg.toml
 COPY Gopkg.lock Gopkg.lock
 COPY main.go main.go
 COPY cmd cmd/
+
 RUN set -ex; \
   dep ensure; \
-  CGO_ENABLED=0 gox -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
-  ls -lah .
+  CGO_ENABLED=0 gox -os='linux darwin' -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
+  mv gotils_linux_* $BUILD_DATA; \
+  mv gotils_darwin_* $BUILD_DATA; \
+  tar czf gotils.tar.gz $BUILD_DATA/gotils_linux_* $BUILD_DATA/gotils_darwin_*
