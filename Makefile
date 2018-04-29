@@ -47,7 +47,7 @@ WIP := 0
 HOTFIX := 0
 
 ifdef DEPLOY_GITHUB_TOKEN
-	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GIT_REPO_OWNER)/$(REPO_NAME).git
+	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git
 else
 	$(error "ERROR : Please export DEPLOY_GITHUB_TOKEN to your shell")
 endif
@@ -126,7 +126,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			-f Dockerfile \
 			-t $(REPO_NAME):$(TAG) \
 			"$(GIT_REPO_URL)#$(GIT_SHA)"
-	$(AT)docker tag $(REPO_NAME):$(TAG) $(DOCKERHUB_OWNER)/$(REPO_NAME):$(TAG)
+	$(AT)docker tag $(REPO_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(REPO_NAME):$(TAG)
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
 else
@@ -142,7 +142,7 @@ release: build
 		&& git clone $(GIT_REPO_URL) \
 		&& cd $(REPO_NAME) \
 		&& git checkout $(GIT_SHA)
-	$(AT)docker push $(DOCKERHUB_OWNER)/$(REPO_NAME):$(TAG)
+	$(AT)docker push $(DOCKERHUB_USERNAME)/$(REPO_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 
 clean :
@@ -174,7 +174,9 @@ help :
 	check_no_existing_tag_locally \
 	checks_for_new_build \
 	check_existing_docker_tag \
-	checks_for_existing_build
+	checks_for_existing_build \
+	checks_for_env_vars \
+	checks_logged_into_dockerhub
 
 # Checks for dependencies
 # Check for docker
@@ -249,7 +251,7 @@ check_no_existing_tag_locally :
 # Check if there are any existing tags already for the commit you are trying to build from
 # Check new tag is not already on remote on git
 # Check new tag is not already on docker repo
-checks_for_new_build : check_deps check_working_dir_status check_branch check_no_existing_tag_on_commit check_no_existing_tag_on_remote check_no_existing_tag_locally
+checks_for_new_build : check_deps check_working_dir_status check_branch check_no_existing_tag_on_commit check_no_existing_tag_on_remote check_no_existing_tag_locally checks_for_env_vars checks_logged_into_dockerhub
 
 # Check for docker tag locally
 # Check for docker tag on remote
@@ -266,7 +268,15 @@ check_existing_git_tag :
 	$(AT)git ls-remote --tags $(GIT_REPO_URL) | grep '$(TAG)' \
 	|| git tag | grep '$(TAG)'
 
-checks_for_existing_build : check_deps check_existing_docker_tag check_existing_git_tag
+checks_for_existing_build : check_deps check_existing_docker_tag check_existing_git_tag checks_for_env_vars checks_logged_into_dockerhub
+
+checks_for_env_vars :
+	$(AT)test ! -z "$$GITHUB_USERNAME" \
+	&& test ! -z "$$DOCKERHUB_USERNAME"
+
+checks_logged_into_dockerhub :
+	$(AT)test -d "$$HOME/.docker" \
+	&& test ! -z "$$(cat "$$HOME/.docker/config.json" | jq -r '.auths | .[] | .auth')"
 
 $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
