@@ -157,9 +157,9 @@ release: build
 # Cleans unused dirs/images/containers
 clean :
 	$(info [INFO] --- Clean stopped containers, intermediate images and build artifacts)
-ifneq ($(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)"),)
-	$(AT)docker stop $(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)")
-	$(AT)docker rm $(shell docker ps -a -q | grep -i "$(BUILDER_IMAGE_NAME)")
+ifneq ($(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)"),)
+	$(AT)docker stop $(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)")
+	$(AT)docker rm $(shell docker ps -a -q --filter "name=$(BUILDER_CONTAINER_NAME)")
 endif
 ifneq ($(shell docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}'),)
 	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep 'none' | awk '{print $$3}' | xargs docker rmi || echo
