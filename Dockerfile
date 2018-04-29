@@ -55,5 +55,6 @@ COPY Gopkg.lock Gopkg.lock
 COPY main.go main.go
 COPY cmd cmd/
 RUN set -ex; \
+  dep ensure; \
   CGO_ENABLED=0 gox -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
   ls -lah .
