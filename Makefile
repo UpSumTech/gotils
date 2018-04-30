@@ -114,6 +114,9 @@ endif
 # Installs all the dependencies for running the build process
 deps : $(DEPS_STATEFILE)
 	$(info [INFO] --- Install dependencies for running make targets)
+ifeq ($(MAKECMDGOALS),deps)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 # Builds the artifacts inside a docker container
 build : $(BUILD_DEPENDENT_TARGETS) Dockerfile $(APPLICATION_FILES)
@@ -141,6 +144,9 @@ else
 	$(info [INFO] --- Skipping tagging git commit sha)
 endif
 	$(AT)rm -rf $(TMPDIR_FOR_BUILD)
+ifeq ($(MAKECMDGOALS),build)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 # Uploads the artifact built from the code to bintray
 # Pushes the docker image to dockerhub
@@ -155,6 +161,9 @@ release: build
 		&& docker container rm -f $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
+ifeq ($(MAKECMDGOALS),release)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 # Cleans unused dirs/images/containers
 clean :
@@ -167,9 +176,15 @@ ifneq ($(shell docker images | egrep -i "($(BUILDER_IMAGE_NAME)|none)" | awk '{p
 	$(AT)docker images | egrep -i "($(BUILDER_IMAGE_NAME)|none)" | awk '{print $$3}' | xargs docker rmi -f || echo
 endif
 	$(AT)rm -rf $(ROOT_DIR)/dist
+ifeq ($(MAKECMDGOALS),clean)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 fullclean : clean
 	$(AT)rm -rf .make
+ifeq ($(MAKECMDGOALS),fullclean)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 help :
 	$(AT)echo make deps - This install dependancies to run the application
@@ -177,11 +192,16 @@ help :
 	$(AT)echo make release - This pushes the golang binary artifacts to bintray/s3/github/artifactory etc
 	$(AT)echo make clean - This remove image caches, stale containers etc
 	$(AT)echo make help - This is the help menu
+ifeq ($(MAKECMDGOALS),help)
+	rm -rf $(TMPDIR_FOR_BUILD)
+endif
 
 ##########################################################################################
 ## Plumbing
 .PHONY : check_deps \
 	checks_for_env_vars \
+	checks_bintray_repo \
+	checks_or_makes_bintray_package \
 	check_working_dir_status \
 	check_branch \
 	check_no_existing_tag_on_commit \
