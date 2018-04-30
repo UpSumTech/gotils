@@ -56,13 +56,16 @@ WORKDIR $BUILD_HOME
 
 COPY Gopkg.toml Gopkg.toml
 COPY Gopkg.lock Gopkg.lock
+
+RUN set -ex; \
+  mkdir -p $BUILD_DATA; \
+  dep ensure
+
 COPY main.go main.go
 COPY cmd cmd/
 
 RUN set -ex; \
-  dep ensure; \
   CGO_ENABLED=0 gox -osarch='linux/amd64 linux/386 darwin/amd64 darwin/386' -rebuild -tags='netgo' -ldflags='-w -extldflags "-static"'; \
-  mkdir -p $BUILD_DATA; \
   mv gotils_linux_* $BUILD_DATA; \
   mv gotils_darwin_* $BUILD_DATA; \
   cd $BUILD_DATA; \
