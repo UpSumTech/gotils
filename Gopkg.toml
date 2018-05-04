@@ -36,14 +36,15 @@
   branch = "master"
   name = "k8s.io/client-go"
 
+[[ constraint ]]
+  name = "gopkg.in/go-playground/validator.v9"
+  branch = "v9"
+
 # [[ constraint ]]
   # name = "golang.org/x/crypto"
 
 # [[ constraint ]]
   # name = "gopkg.in/src-d/go-git.v4"
-
-# [[ constraint ]]
-  # name = "gopkg.in/go-playground/validator.v9"
 
 # [[ constraint ]]
   # name = "github.com/go-playground/jsonschema"
