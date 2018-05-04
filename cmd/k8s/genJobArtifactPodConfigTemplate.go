@@ -1,10 +1,10 @@
 package k8s
 
 import (
+	"fmt"
 	"strings"
 
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -12,52 +12,82 @@ import (
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 )
 
-func GenArtifactBuilderPodTemplate() (string, error) {
-	var data string
-
-	if appPort == 0 {
-		return data, utils.RaiseErr("Missing the port number")
-	}
-
-	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: strings.Join([]string{imageName, "deployment"}, "-"),
+func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
+	return &corev1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Pod",
+			APIVersion: "v1",
 		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: utils.Int32Ptr(2),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": imageName,
-				},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      strings.Join([]string{imageName, "pod"}, "-"),
+			Namespace: namespace,
+			Labels: map[string]string{
+				"app":         imageName,
+				"app_version": imageTag,
 			},
-			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app": imageName,
+			Annotations: map[string]string{
+				"description": fmt.Sprintf("Builds the artifact for %s", imageName),
+			},
+		},
+		Spec: corev1.PodSpec{
+			Hostname: imageName,
+			Volumes: []corev1.Volume{
+				corev1.Volume{
+					"build-artifact-data",
+					corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{
+							Medium: corev1.StorageMediumDefault,
+						},
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
-						{
-							Name:  imageName,
-							Image: strings.Join([]string{imageName, imageTag}, ":"),
-							Ports: []apiv1.ContainerPort{
-								{
-									Name:          "http",
-									Protocol:      apiv1.ProtocolTCP,
-									ContainerPort: *utils.Int32Ptr(appPort),
-								},
-							},
+				corev1.Volume{
+					"dshm",
+					corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{
+							Medium: corev1.StorageMediumMemory,
 						},
 					},
 				},
 			},
+			Containers: []corev1.Container{
+				{
+					Name:            imageName,
+					Image:           strings.Join([]string{strings.Join([]string{"sumanmukherjee03", imageName}, "/"), imageTag}, ":"),
+					ImagePullPolicy: corev1.PullAlways,
+					VolumeMounts: []corev1.VolumeMount{
+						corev1.VolumeMount{
+							Name:      "build-artifact-data",
+							MountPath: "/var/data",
+						},
+						corev1.VolumeMount{
+							Name:      "dshm",
+							MountPath: "/dev/shm",
+						},
+					},
+					Command: []string{
+						"ls",
+						"-lah",
+						"/var/data",
+					},
+					Lifecycle: &corev1.Lifecycle{
+						PreStop: &corev1.Handler{
+							Exec: &corev1.ExecAction{
+								Command: []string{
+									"/usr/bin/env",
+									"bash",
+									"-c",
+									"test ! -z $(ls -A /var/data)",
+								},
+							},
+						},
+					},
+					Resources: getResourceRequirements(input.Limits, input.Requests),
+				},
+			},
+			RestartPolicy:                 corev1.RestartPolicyNever,
+			TerminationGracePeriodSeconds: utils.Int64Ptr(input.TerminationGracePeriod),
+			ActiveDeadlineSeconds:         utils.Int64Ptr(input.Deadline),
 		},
+		Status: corev1.PodStatus{},
 	}
-
-	data, err := utils.ToJson(deployment)
-	if err != nil {
-		return data, err
-	}
-	return data, nil
 }

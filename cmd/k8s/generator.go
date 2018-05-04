@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	ARTIFACT_BUILDER_POD = "artifact_builder_pod"
+	ARTIFACT_BUILDER_POD  = "artifact_builder_pod"
+	WEB_SERVER_DEPLOYMENT = "web_server_deployment"
 )
 
 var (
@@ -19,9 +20,11 @@ var (
 	### Available commands for k8s
 	# gotils k8s generate TEMPLATE_KIND
 	gotils k8s generate artifact_builder_pod -d $(pwd)/artifact_builder_pod.json`
-	validK8sTemplates = map[string]func() (string, error){
-		ARTIFACT_BUILDER_POD: GenArtifactBuilderPodTemplate,
+	validK8sTemplates = map[string]bool{
+		ARTIFACT_BUILDER_POD:  true,
+		WEB_SERVER_DEPLOYMENT: true,
 	}
+	src       string
 	dest      string
 	namespace string
 	imageName string
@@ -52,6 +55,8 @@ func NewK8sGenerator() *cobra.Command {
 			genTemplate(args[0])
 		},
 	}
+	cmd.Flags().StringVarP(&src, "src", "s", "", "Full path to the input file")
+	cmd.MarkFlagRequired("src")
 	cmd.Flags().StringVarP(&dest, "dest", "d", "", "Full path to the output file")
 	cmd.MarkFlagRequired("dest")
 	cmd.Flags().StringVarP(&namespace, "namespace", "", "", "Namespace on which to perform the operations")
@@ -67,7 +72,15 @@ func NewK8sGenerator() *cobra.Command {
 ////////////////////////// Unexported funcs //////////////////////////
 
 func genTemplate(key string) {
-	data, err := validK8sTemplates[key]()
+	var input K8sTemplate
+	switch key {
+	case ARTIFACT_BUILDER_POD:
+		input = NewJobArtifactTemplate()
+	case WEB_SERVER_DEPLOYMENT:
+		input = NewWebServerDeployment()
+	}
+
+	data, err := input.jsonOutput()
 	if err != nil {
 		utils.CheckErr(err.Error())
 	}
