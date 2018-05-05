@@ -6,12 +6,6 @@ LABEL git_tag="$GIT_TAG" \
   build_user="$BUILD_USER" \
   repo_name="$REPO_NAME"
 
-ARG NON_ROOT_UID=1001
-ARG NON_ROOT_GID=1001
-ARG NON_ROOT_USER=default
-ARG REPO_NAME=gotils
-ARG GITHUB_USERNAME=sumanmukherjee03
-
 RUN set -ex; \
   ls -lah /var/data/build
 

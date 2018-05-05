@@ -134,6 +134,9 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
 			--build-arg BUILD_USER="$(USER)" \
 			--build-arg REPO_NAME="$(REPO_NAME)" \
+			--build-arg NON_ROOT_UID=1001 \
+			--build-arg NON_ROOT_GID=1001 \
+			--build-arg NON_ROOT_USER=default \
 			-f Dockerfile \
 			-t $(BUILDER_IMAGE_NAME):$(TAG) \
 			"$(GIT_REPO_URL)#$(GIT_SHA)"
