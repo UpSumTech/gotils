@@ -1,3 +1,6 @@
+ARG NON_ROOT_UID=1001
+ARG NON_ROOT_GID=1001
+ARG NON_ROOT_USER=default
 FROM sumanmukherjee03/golang:onbuild-1.10.0
 LABEL git_tag="$GIT_TAG" \
   build_time="$BUILD_TIME" \
