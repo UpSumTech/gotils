@@ -133,6 +133,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg BUILD_TIME=$(BUILD_TIME) \
 			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
 			--build-arg BUILD_USER="$(USER)" \
+			--build-arg REPO_NAME="$(REPO_NAME)" \
 			-f Dockerfile \
 			-t $(BUILDER_IMAGE_NAME):$(TAG) \
 			"$(GIT_REPO_URL)#$(GIT_SHA)"
