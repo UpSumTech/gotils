@@ -1,3 +1,16 @@
+/*
+cat input.json
+
+{
+  "limits": {
+    "cpu": "200m",
+    "memory": "200Mi"
+  },
+  "termination_grace_period": 90,
+  "deadline": 300
+}
+*/
+
 package k8s
 
 import (
