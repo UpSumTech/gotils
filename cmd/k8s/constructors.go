@@ -5,10 +5,8 @@ func NewJobArtifactTemplate() *JobArtifactTemplate {
 	i.Commands = []string{}
 	i.Limits.Cpu = CPU_LIMIT
 	i.Limits.Memory = MEM_LIMIT
-	i.Limits.Storage = STORAGE_LIMIT
 	i.Requests.Cpu = CPU_REQUEST
 	i.Requests.Memory = MEM_REQUEST
-	i.Requests.Storage = STORAGE_REQUEST
 	i.TerminationGracePeriod = TERMINATION_LIMIT_SECS
 	i.Deadline = DEADLINE_LIMIT_SECS
 	return &i
@@ -17,13 +15,10 @@ func NewJobArtifactTemplate() *JobArtifactTemplate {
 func NewWebServerDeployment() *WebServerDeployment {
 	i := WebServerDeployment{}
 	i.Commands = []string{}
-	i.Commands = []string{}
 	i.Limits.Cpu = CPU_LIMIT
 	i.Limits.Memory = MEM_LIMIT
-	i.Limits.Storage = STORAGE_LIMIT
 	i.Requests.Cpu = CPU_LIMIT
 	i.Requests.Memory = MEM_LIMIT
-	i.Requests.Storage = STORAGE_LIMIT
 	i.TerminationGracePeriod = TERMINATION_LIMIT_SECS
 	return &i
 }

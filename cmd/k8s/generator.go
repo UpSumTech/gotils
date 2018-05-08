@@ -24,12 +24,15 @@ var (
 		ARTIFACT_BUILDER_POD:  true,
 		WEB_SERVER_DEPLOYMENT: true,
 	}
-	src       string
-	dest      string
-	namespace string
-	imageName string
-	imageTag  string
-	appPort   int
+	src                 string
+	dest                string
+	namespace           string
+	imageName           string
+	imageTag            string
+	appPort             int
+	volumeImageName     string
+	volumeImageTag      string
+	volumeContainerPort int
 )
 
 func NewK8sGenerator() *cobra.Command {
@@ -66,6 +69,9 @@ func NewK8sGenerator() *cobra.Command {
 	cmd.Flags().StringVarP(&imageTag, "tag", "", "", "Docker image tag")
 	cmd.MarkFlagRequired("tag")
 	cmd.Flags().IntVarP(&appPort, "port", "", 0, "Application port to be exposed")
+	cmd.Flags().StringVarP(&volumeImageName, "volume-image", "", "", "Docker image name for the volume container")
+	cmd.Flags().StringVarP(&volumeImageTag, "volume-tag", "", "", "Docker image tag for the volume container")
+	cmd.Flags().IntVarP(&volumeContainerPort, "volume-port", "", 0, "Port to be exposed for the volume container")
 	return cmd
 }
 

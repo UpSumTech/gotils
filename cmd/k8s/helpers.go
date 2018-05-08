@@ -72,14 +72,12 @@ func deleteDeployment(deployment *appsv1.Deployment) error {
 func getResourceRequirements(l ResourceLimitConfig, r ResourceRequestConfig) corev1.ResourceRequirements {
 	return corev1.ResourceRequirements{
 		Limits: corev1.ResourceList{
-			corev1.ResourceCPU:     resource.MustParse(l.Cpu),
-			corev1.ResourceMemory:  resource.MustParse(l.Memory),
-			corev1.ResourceStorage: resource.MustParse(l.Storage),
+			corev1.ResourceCPU:    resource.MustParse(l.Cpu),
+			corev1.ResourceMemory: resource.MustParse(l.Memory),
 		},
 		Requests: corev1.ResourceList{
-			corev1.ResourceCPU:     resource.MustParse(r.Cpu),
-			corev1.ResourceMemory:  resource.MustParse(r.Memory),
-			corev1.ResourceStorage: resource.MustParse(r.Storage),
+			corev1.ResourceCPU:    resource.MustParse(r.Cpu),
+			corev1.ResourceMemory: resource.MustParse(r.Memory),
 		},
 	}
 }

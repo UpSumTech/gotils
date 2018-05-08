@@ -5,8 +5,3 @@ LABEL git_tag="$GIT_TAG" \
   github_user="$GITHUB_USERNAME" \
   build_user="$BUILD_USER" \
   repo_name="$REPO_NAME"
-
-RUN set -ex; \
-  ls -lah /var/data/build
-
-CMD []

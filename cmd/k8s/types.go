@@ -9,10 +9,8 @@ import (
 const (
 	CPU_LIMIT              = "500m"
 	MEM_LIMIT              = "500Mi"
-	STORAGE_LIMIT          = "500Mi"
 	CPU_REQUEST            = "100m"
 	MEM_REQUEST            = "100Mi"
-	STORAGE_REQUEST        = "100Mi"
 	TERMINATION_LIMIT_SECS = 120
 	DEADLINE_LIMIT_SECS    = 600
 )
@@ -32,19 +30,17 @@ type K8sTemplate interface {
 }
 
 type ResourceLimitConfig struct {
-	Cpu     string `json:"cpu" validate:"required"`
-	Memory  string `json:"memory" validate:"required"`
-	Storage string `json:"storage" validate:"required"`
+	Cpu    string `json:"cpu" validate:"required"`
+	Memory string `json:"memory" validate:"required"`
 }
 
 type ResourceRequestConfig struct {
-	Cpu     string `json:"cpu" validate:"omitempty"`
-	Memory  string `json:"memory" validate:"omitempty"`
-	Storage string `json:"storage" validate:"omitempty"`
+	Cpu    string `json:"cpu" validate:"omitempty"`
+	Memory string `json:"memory" validate:"omitempty"`
 }
 
 type JobArtifactTemplate struct {
-	Limits                 ResourceLimitConfig   `json:"requests" validate:"required,dive,required"`
+	Limits                 ResourceLimitConfig   `json:"limits" validate:"required,dive,required"`
 	Requests               ResourceRequestConfig `json:"requests"`
 	TerminationGracePeriod int                   `json:"termination_grace_period" validate:"required"`
 	Commands               []string              `json:"commands"`
@@ -55,11 +51,24 @@ func (i *JobArtifactTemplate) readInput() error     { return readJson(i, src) }
 func (i *JobArtifactTemplate) validateInput() error { return validateJsonInput(i) }
 func (i *JobArtifactTemplate) build() *corev1.Pod   { return genJobArtifactTemplate(*i) }
 func (i *JobArtifactTemplate) jsonOutput() (string, error) {
-	o := i.build()
-	data, err := utils.ToJson(o)
+	var data string
+
+	err := i.readInput()
 	if err != nil {
 		return data, err
 	}
+
+	err = i.validateInput()
+	if err != nil {
+		return data, err
+	}
+
+	o := i.build()
+	data, err = utils.ToJson(o)
+	if err != nil {
+		return data, err
+	}
+
 	return data, nil
 }
 
@@ -74,10 +83,23 @@ func (i *WebServerDeployment) readInput() error          { return readJson(i, sr
 func (i *WebServerDeployment) validateInput() error      { return validateJsonInput(i) }
 func (i *WebServerDeployment) build() *appsv1.Deployment { return genWebServerDeploymentTemplate(*i) }
 func (i *WebServerDeployment) jsonOutput() (string, error) {
-	o := i.build()
-	data, err := utils.ToJson(o)
+	var data string
+
+	err := i.readInput()
 	if err != nil {
 		return data, err
 	}
+
+	err = i.validateInput()
+	if err != nil {
+		return data, err
+	}
+
+	o := i.build()
+	data, err = utils.ToJson(o)
+	if err != nil {
+		return data, err
+	}
+
 	return data, nil
 }
