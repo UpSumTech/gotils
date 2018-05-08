@@ -54,6 +54,14 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 		},
 		Spec: corev1.PodSpec{
 			Hostname: imageName,
+			SecurityContext: &corev1.PodSecurityContext{
+				RunAsUser:    utils.Int64Ptr(userId),
+				RunAsNonRoot: utils.BoolPtr(true),
+				FSGroup:      utils.Int64Ptr(groupId),
+				SupplementalGroups: []int64{
+					int64(groupId),
+				},
+			},
 			Volumes: []corev1.Volume{
 				corev1.Volume{
 					"artifact-data",
@@ -72,7 +80,7 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 					},
 				},
 			},
-			Containers: []corev1.Container{
+			InitContainers: []corev1.Container{
 				corev1.Container{
 					Name:            imageName,
 					Image:           strings.Join([]string{strings.Join([]string{"sumanmukherjee03", imageName}, "/"), imageTag}, ":"),
@@ -87,25 +95,14 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 							MountPath: "/dev/shm",
 						},
 					},
-					Command: []string{
-						"ls",
-						"-lah",
-						"/var/data",
-					},
-					Lifecycle: &corev1.Lifecycle{
-						PreStop: &corev1.Handler{
-							Exec: &corev1.ExecAction{
-								Command: []string{
-									"/usr/bin/env",
-									"bash",
-									"-c",
-									"test ! -z $(ls -A /var/data/build)",
-								},
-							},
-						},
-					},
+					Env:       getEnvVars(),
 					Resources: getResourceRequirements(input.Limits, input.Requests),
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: utils.BoolPtr(false),
+					},
 				},
+			},
+			Containers: []corev1.Container{
 				corev1.Container{
 					Name:            volumeImageName,
 					Image:           strings.Join([]string{strings.Join([]string{"sumanmukherjee03", volumeImageName}, "/"), volumeImageTag}, ":"),
@@ -120,6 +117,7 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 							MountPath: "/dev/shm",
 						},
 					},
+					Env: getEnvVars(),
 					Ports: []corev1.ContainerPort{
 						corev1.ContainerPort{
 							ContainerPort: int32(volumeContainerPort),
@@ -139,6 +137,9 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 						},
 					},
 					Resources: getResourceRequirements(input.Limits, input.Requests),
+					SecurityContext: &corev1.SecurityContext{
+						AllowPrivilegeEscalation: utils.BoolPtr(false),
+					},
 				},
 			},
 			RestartPolicy:                 corev1.RestartPolicyNever,

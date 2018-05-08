@@ -33,6 +33,8 @@ var (
 	volumeImageName     string
 	volumeImageTag      string
 	volumeContainerPort int
+	userId              int
+	groupId             int
 )
 
 func NewK8sGenerator() *cobra.Command {
@@ -68,6 +70,10 @@ func NewK8sGenerator() *cobra.Command {
 	cmd.MarkFlagRequired("image")
 	cmd.Flags().StringVarP(&imageTag, "tag", "", "", "Docker image tag")
 	cmd.MarkFlagRequired("tag")
+	cmd.Flags().IntVarP(&userId, "user-id", "", 1001, "User id the pod is supposed to run as")
+	cmd.MarkFlagRequired("user-id")
+	cmd.Flags().IntVarP(&groupId, "group-id", "", 1001, "Group id the pod is supposed to run as")
+	cmd.MarkFlagRequired("group-id")
 	cmd.Flags().IntVarP(&appPort, "port", "", 0, "Application port to be exposed")
 	cmd.Flags().StringVarP(&volumeImageName, "volume-image", "", "", "Docker image name for the volume container")
 	cmd.Flags().StringVarP(&volumeImageTag, "volume-tag", "", "", "Docker image tag for the volume container")
