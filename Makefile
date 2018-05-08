@@ -161,8 +161,9 @@ release: build
 	$(AT)docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
 		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz dist/gotils-$(TAG).tar.gz \
 		&& curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"name": "$(TAG)", "vcs_tag": "$(TAG)", "released": "$(BUILD_TIME)"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/versions \
-		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1 \
-		&& docker container rm -f $(BUILDER_CONTAINER_NAME)
+		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
+	$(AT)docker stop $(BUILDER_CONTAINER_NAME)
+	$(AT)docker rm $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 ifeq ($(MAKECMDGOALS),release)
