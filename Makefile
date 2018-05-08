@@ -134,8 +134,8 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
 			--build-arg BUILD_USER="$(USER)" \
 			--build-arg REPO_NAME="$(REPO_NAME)" \
-			--build-arg NON_ROOT_UID=1001 \
-			--build-arg NON_ROOT_GID=1001 \
+			--build-arg NON_ROOT_UID=$(NON_ROOT_UID) \
+			--build-arg NON_ROOT_GID=$(NON_ROOT_GID) \
 			--build-arg NON_ROOT_USER=default \
 			-f Dockerfile \
 			-t $(BUILDER_IMAGE_NAME):$(TAG) \
@@ -158,7 +158,7 @@ endif
 release: build
 	$(info [INFO] --- Create release candidate)
 	$(AT)mkdir -p dist
-	$(AT)docker container create --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
+	$(AT)docker container create -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
 		&& docker container cp $(BUILDER_CONTAINER_NAME):/var/data/gotils.tar.gz dist/gotils-$(TAG).tar.gz \
 		&& curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"name": "$(TAG)", "vcs_tag": "$(TAG)", "released": "$(BUILD_TIME)"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/versions \
 		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1 \
