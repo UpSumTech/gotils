@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	BINTRAY_TOKEN_SECRET  = "bintray_token_secret"
 	GITHUB_TOKEN_SECRET   = "github_token_secret"
 	DOCKER_CONFIG_SECRET  = "docker_config_secret"
 	IMAGE_BUILDER_POD     = "image_builder_pod"
@@ -24,6 +25,7 @@ var (
 	# gotils k8s generate TEMPLATE_KIND
 	gotils k8s generate artifact_builder_pod -d $(pwd)/artifact_builder_pod.json`
 	validK8sTemplates = map[string]bool{
+		BINTRAY_TOKEN_SECRET:  true,
 		GITHUB_TOKEN_SECRET:   true,
 		DOCKER_CONFIG_SECRET:  true,
 		IMAGE_BUILDER_POD:     true,
@@ -93,6 +95,8 @@ func NewK8sGenerator() *cobra.Command {
 func genTemplate(key string) {
 	var input K8sTemplate
 	switch key {
+	case BINTRAY_TOKEN_SECRET:
+		input = NewBintrayTokenSecretTemplate()
 	case GITHUB_TOKEN_SECRET:
 		input = NewGithubTokenSecretTemplate()
 	case DOCKER_CONFIG_SECRET:

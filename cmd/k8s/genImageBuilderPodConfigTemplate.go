@@ -118,6 +118,39 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 								},
 							},
 						},
+						corev1.EnvVar{
+							Name: BINTRAY_TOKEN_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: BINTRAY_TOKEN_SECRET_NAME,
+									},
+									Key: BINTRAY_TOKEN_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
+							Name: BINTRAY_USERNAME_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: BINTRAY_TOKEN_SECRET_NAME,
+									},
+									Key: BINTRAY_USERNAME_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
+							Name: BINTRAY_REPO_NAME_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: BINTRAY_TOKEN_SECRET_NAME,
+									},
+									Key: BINTRAY_REPO_NAME_SECRET_KEY,
+								},
+							},
+						},
 					}...),
 					Resources: getResourceRequirements(input.Limits, input.Requests),
 					SecurityContext: &corev1.SecurityContext{

@@ -7,10 +7,18 @@ import (
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 )
 
+func NewBintrayTokenSecretTemplate() *BintrayTokenSecretTemplate {
+	i := BintrayTokenSecretTemplate{}
+	i.BintrayUser = utils.GetBintrayUser()
+	i.BintrayRepo = utils.GetBintrayRepo()
+	i.BintrayToken = utils.GetBintrayToken()
+	return &i
+}
+
 func NewGithubTokenSecretTemplate() *GithubTokenSecretTemplate {
 	i := GithubTokenSecretTemplate{}
 	i.GithubUser = utils.GetGithubUser()
-	i.GithubUser = utils.GetGithubToken()
+	i.GithubToken = utils.GetGithubToken()
 	return &i
 }
 
