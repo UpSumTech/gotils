@@ -13,3 +13,7 @@ func Int64Ptr(i int) *int64 {
 func BoolPtr(b bool) *bool {
 	return &b
 }
+
+func StringPtr(s string) *string {
+	return &s
+}

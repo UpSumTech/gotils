@@ -7,7 +7,8 @@ cat input.json
     "memory": "200Mi"
   },
   "termination_grace_period": 90,
-  "deadline": 300
+  "deadline": 300,
+  "docker_user": "sumanmukherjee03"
 }
 */
 
@@ -83,7 +84,7 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 			InitContainers: []corev1.Container{
 				corev1.Container{
 					Name:            imageName,
-					Image:           strings.Join([]string{strings.Join([]string{"sumanmukherjee03", imageName}, "/"), imageTag}, ":"),
+					Image:           strings.Join([]string{strings.Join([]string{input.DockerRegistryDomain, input.DockerUser, imageName}, "/"), imageTag}, ":"),
 					ImagePullPolicy: corev1.PullAlways,
 					VolumeMounts: []corev1.VolumeMount{
 						corev1.VolumeMount{
@@ -95,7 +96,30 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 							MountPath: "/dev/shm",
 						},
 					},
-					Env:       getEnvVars(),
+					Env: append(getDefaultEnvVars(), []corev1.EnvVar{
+						corev1.EnvVar{
+							Name: GITHUB_USERNAME_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_USERNAME_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
+							Name: GITHUB_TOKEN_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_TOKEN_SECRET_KEY,
+								},
+							},
+						},
+					}...),
 					Resources: getResourceRequirements(input.Limits, input.Requests),
 					SecurityContext: &corev1.SecurityContext{
 						AllowPrivilegeEscalation: utils.BoolPtr(false),
@@ -105,7 +129,7 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 			Containers: []corev1.Container{
 				corev1.Container{
 					Name:            volumeImageName,
-					Image:           strings.Join([]string{strings.Join([]string{"sumanmukherjee03", volumeImageName}, "/"), volumeImageTag}, ":"),
+					Image:           strings.Join([]string{strings.Join([]string{input.DockerRegistryDomain, input.DockerUser, volumeImageName}, "/"), volumeImageTag}, ":"),
 					ImagePullPolicy: corev1.PullAlways,
 					VolumeMounts: []corev1.VolumeMount{
 						corev1.VolumeMount{
@@ -117,23 +141,34 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 							MountPath: "/dev/shm",
 						},
 					},
-					Env: getEnvVars(),
+					Env: append(getDefaultEnvVars(), []corev1.EnvVar{
+						corev1.EnvVar{
+							Name: GITHUB_USERNAME_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_USERNAME_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
+							Name: GITHUB_TOKEN_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_TOKEN_SECRET_KEY,
+								},
+							},
+						},
+					}...),
 					Ports: []corev1.ContainerPort{
 						corev1.ContainerPort{
 							ContainerPort: int32(volumeContainerPort),
 							Protocol:      corev1.ProtocolTCP,
-						},
-					},
-					Lifecycle: &corev1.Lifecycle{
-						PostStart: &corev1.Handler{
-							Exec: &corev1.ExecAction{
-								Command: []string{
-									"/usr/bin/env",
-									"bash",
-									"-c",
-									"test ! -z $(ls -A /var/data/build)",
-								},
-							},
 						},
 					},
 					Resources: getResourceRequirements(input.Limits, input.Requests),

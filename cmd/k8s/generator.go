@@ -8,6 +8,9 @@ import (
 )
 
 const (
+	GITHUB_TOKEN_SECRET   = "github_token_secret"
+	DOCKER_CONFIG_SECRET  = "docker_config_secret"
+	IMAGE_BUILDER_POD     = "image_builder_pod"
 	ARTIFACT_BUILDER_POD  = "artifact_builder_pod"
 	WEB_SERVER_DEPLOYMENT = "web_server_deployment"
 )
@@ -21,12 +24,17 @@ var (
 	# gotils k8s generate TEMPLATE_KIND
 	gotils k8s generate artifact_builder_pod -d $(pwd)/artifact_builder_pod.json`
 	validK8sTemplates = map[string]bool{
+		GITHUB_TOKEN_SECRET:   true,
+		DOCKER_CONFIG_SECRET:  true,
+		IMAGE_BUILDER_POD:     true,
 		ARTIFACT_BUILDER_POD:  true,
 		WEB_SERVER_DEPLOYMENT: true,
 	}
 	src                 string
 	dest                string
 	namespace           string
+	builderImageName    string
+	builderImageTag     string
 	imageName           string
 	imageTag            string
 	appPort             int
@@ -60,20 +68,19 @@ func NewK8sGenerator() *cobra.Command {
 			genTemplate(args[0])
 		},
 	}
+
 	cmd.Flags().StringVarP(&src, "src", "s", "", "Full path to the input file")
 	cmd.MarkFlagRequired("src")
 	cmd.Flags().StringVarP(&dest, "dest", "d", "", "Full path to the output file")
 	cmd.MarkFlagRequired("dest")
 	cmd.Flags().StringVarP(&namespace, "namespace", "", "", "Namespace on which to perform the operations")
 	cmd.MarkFlagRequired("namespace")
+	cmd.Flags().StringVarP(&builderImageName, "builder-image", "", "", "Docker image name that builds the other docker images")
+	cmd.Flags().StringVarP(&builderImageTag, "builder-image-tag", "", "", "Docker image tag for the image that builds other docker images")
 	cmd.Flags().StringVarP(&imageName, "image", "", "", "Docker image name")
-	cmd.MarkFlagRequired("image")
 	cmd.Flags().StringVarP(&imageTag, "tag", "", "", "Docker image tag")
-	cmd.MarkFlagRequired("tag")
 	cmd.Flags().IntVarP(&userId, "user-id", "", 1001, "User id the pod is supposed to run as")
-	cmd.MarkFlagRequired("user-id")
 	cmd.Flags().IntVarP(&groupId, "group-id", "", 1001, "Group id the pod is supposed to run as")
-	cmd.MarkFlagRequired("group-id")
 	cmd.Flags().IntVarP(&appPort, "port", "", 0, "Application port to be exposed")
 	cmd.Flags().StringVarP(&volumeImageName, "volume-image", "", "", "Docker image name for the volume container")
 	cmd.Flags().StringVarP(&volumeImageTag, "volume-tag", "", "", "Docker image tag for the volume container")
@@ -86,6 +93,12 @@ func NewK8sGenerator() *cobra.Command {
 func genTemplate(key string) {
 	var input K8sTemplate
 	switch key {
+	case GITHUB_TOKEN_SECRET:
+		input = NewGithubTokenSecretTemplate()
+	case DOCKER_CONFIG_SECRET:
+		input = NewDockerConfigSecretTemplate()
+	case IMAGE_BUILDER_POD:
+		input = NewImageBuilderTemplate()
 	case ARTIFACT_BUILDER_POD:
 		input = NewJobArtifactTemplate()
 	case WEB_SERVER_DEPLOYMENT:

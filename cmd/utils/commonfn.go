@@ -2,6 +2,8 @@ package utils
 
 import (
 	"flag"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -26,6 +28,41 @@ func InitConfig(cfgFile string) {
 	if err := viper.ReadInConfig(); err != nil {
 		CheckErr(err.Error())
 	}
+}
+
+func GetDockerConfig(cfgFile string) []byte {
+	if _, err := os.Stat(cfgFile); err != nil {
+		CheckErr(err.Error())
+	}
+	b, err := ioutil.ReadFile(cfgFile)
+	if err != nil {
+		CheckErr(err.Error())
+	}
+	return b
+}
+
+func GetGithubToken() string {
+	token := os.Getenv("DEPLOY_GITHUB_TOKEN")
+	if len(token) == 0 {
+		CheckErr("Could not find GITHUB_TOKEN exported in the shell")
+	}
+	return token
+}
+
+func GetGithubUser() string {
+	token := os.Getenv("GITHUB_USERNAME")
+	if len(token) == 0 {
+		CheckErr("Could not find GITHUB_USERNAME exported in the shell")
+	}
+	return token
+}
+
+func GetDockerhubUser() string {
+	token := os.Getenv("DOCKERHUB_USERNAME")
+	if len(token) == 0 {
+		CheckErr("Could not find DOCKERHUB_USERNAME exported in the shell")
+	}
+	return token
 }
 
 func GetK8sClientSet() *kubernetes.Clientset {

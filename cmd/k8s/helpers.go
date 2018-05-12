@@ -82,7 +82,7 @@ func getResourceRequirements(l ResourceLimitConfig, r ResourceRequestConfig) cor
 	}
 }
 
-func getEnvVars() []corev1.EnvVar {
+func getDefaultEnvVars() []corev1.EnvVar {
 	return []corev1.EnvVar{
 		corev1.EnvVar{
 			Name: "POD_NAME",
@@ -151,4 +151,31 @@ func validateJsonInput(i JsonInput) error {
 		return err
 	}
 	return nil
+}
+
+func hostPathTypePtr(h corev1.HostPathType) *corev1.HostPathType {
+	x := h
+	return &x
+}
+
+func getJsonTemplateOutput(i K8sTemplate) (string, error) {
+	var data string
+
+	err := i.readInput()
+	if err != nil {
+		return data, err
+	}
+
+	err = i.validateInput()
+	if err != nil {
+		return data, err
+	}
+
+	o := i.build()
+	data, err = utils.ToJson(o)
+	if err != nil {
+		return data, err
+	}
+
+	return data, nil
 }
