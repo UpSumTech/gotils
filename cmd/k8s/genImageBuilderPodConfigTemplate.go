@@ -8,7 +8,8 @@ cat input.json
   },
   "termination_grace_period": 90,
   "deadline": 300,
-  "docker_user": "sumanmukherjee03"
+  "docker_user": "sumanmukherjee03",
+  "git_repo_url": "https://github.com/sumanmukherjee03/gotils.git"
 }
 */
 
@@ -27,24 +28,27 @@ import (
 )
 
 func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
+	repoUrlParts := strings.Split(input.GitRepoUrl, "/")
+	repoNamePart := repoUrlParts[len(repoUrlParts)-1]
+	repoName := strings.Replace(repoNamePart, ".git", "", -1)
 	return &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      strings.Join([]string{imageName, "image-builder-pod"}, "-"),
+			Name:      strings.Join([]string{repoName, builderImageName, "pod"}, "-"),
 			Namespace: namespace,
 			Labels: map[string]string{
 				"app":         builderImageName,
 				"app_version": builderImageTag,
 			},
 			Annotations: map[string]string{
-				"description": fmt.Sprintf("Builds the docker image for %s", imageName),
+				"description": fmt.Sprintf("Builds the docker image for %s", repoName),
 			},
 		},
 		Spec: corev1.PodSpec{
-			Hostname: imageName,
+			Hostname: builderImageName,
 			Volumes: []corev1.Volume{
 				corev1.Volume{
 					"docker-socket",
@@ -96,7 +100,7 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 						},
 						corev1.VolumeMount{
 							Name:      "docker-config",
-							MountPath: "/root/.docker/config.json",
+							MountPath: "/root",
 							ReadOnly:  true,
 						},
 					},
