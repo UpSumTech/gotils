@@ -97,6 +97,14 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 					},
 					Env: append(getDefaultEnvVars(), []corev1.EnvVar{
 						corev1.EnvVar{
+							Name:  DOCKER_USERNAME_ENV_VAR,
+							Value: input.DockerUser,
+						},
+						corev1.EnvVar{
+							Name:  GIT_REPO_NAME_ENV_VAR,
+							Value: input.RepoName,
+						},
+						corev1.EnvVar{
 							Name: GITHUB_USERNAME_ENV_VAR,
 							ValueFrom: &corev1.EnvVarSource{
 								SecretKeyRef: &corev1.SecretKeySelector{

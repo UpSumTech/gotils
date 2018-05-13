@@ -7,6 +7,7 @@ const (
 	MEM_REQUEST                  = "100Mi"
 	TERMINATION_LIMIT_SECS       = 120
 	DEADLINE_LIMIT_SECS          = 600
+	DOCKER_USERNAME_ENV_VAR      = "DOCKERHUB_USERNAME"
 	DOCKER_CONFIG_SECRET_NAME    = "docker-config"
 	DOCKER_REGISTRY              = "https://index.docker.io/v1"
 	DOCKER_REGISTRY_DOMAIN       = "index.docker.io"
@@ -22,6 +23,7 @@ const (
 	BINTRAY_USERNAME_ENV_VAR     = "BINTRAY_USERNAME"
 	BINTRAY_TOKEN_ENV_VAR        = "BINTRAY_API_KEY"
 	BINTRAY_REPO_NAME_ENV_VAR    = "BINTRAY_REPO_NAME"
+	GIT_REPO_NAME_ENV_VAR        = "GIT_REPO_NAME"
 )
 
 type JsonInput interface {
@@ -122,6 +124,7 @@ type ImageBuilderTemplate struct {
 	DockerUser             string                `json:"docker_user" validate:"required"`
 	DockerRegistry         string                `json:"docker_registry" validate:"required"`
 	DockerRegistryDomain   string                `json:"docker_registry_domain" validate:"required"`
+	RepoName               string                `json:"repo_name" validate:"required"`
 }
 
 func (i *ImageBuilderTemplate) readInput() error            { return readJson(i, src) }

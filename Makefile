@@ -338,8 +338,5 @@ checks_logged_into_dockerhub :
 $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
 	$(AT)mkdir -p .make
-	$(AT)command -v go || { echo "ERROR >> golang is not installed or not in your path"; exit 1; }
-	$(AT)command -v dep >/dev/null 2>&1 || go get -u github.com/golang/dep/cmd/dep
-	$(AT)dep ensure
 	$(AT)touch $(DEPS_STATEFILE)
 
