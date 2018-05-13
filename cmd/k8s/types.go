@@ -24,6 +24,8 @@ const (
 	BINTRAY_TOKEN_ENV_VAR        = "BINTRAY_API_KEY"
 	BINTRAY_REPO_NAME_ENV_VAR    = "BINTRAY_REPO_NAME"
 	GIT_REPO_NAME_ENV_VAR        = "GIT_REPO_NAME"
+	DEFAULT_GIT_BRANCH           = "master"
+	DEFAULT_RELEASE_VERSION      = "patch"
 )
 
 type JsonInput interface {
@@ -124,7 +126,9 @@ type ImageBuilderTemplate struct {
 	DockerUser             string                `json:"docker_user" validate:"required"`
 	DockerRegistry         string                `json:"docker_registry" validate:"required"`
 	DockerRegistryDomain   string                `json:"docker_registry_domain" validate:"required"`
-	RepoName               string                `json:"repo_name" validate:"required"`
+	GitRepoUrl             string                `json:"git_repo_url" validate:"required"`
+	GitBranch              string                `json:"git_branch" validate:"required"`
+	ReleaseVersion         string                `json:"release_version" validate:"required"`
 }
 
 func (i *ImageBuilderTemplate) readInput() error            { return readJson(i, src) }

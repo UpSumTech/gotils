@@ -75,8 +75,13 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 			},
 			Containers: []corev1.Container{
 				corev1.Container{
-					Name:            builderImageName,
-					Image:           strings.Join([]string{strings.Join([]string{input.DockerRegistryDomain, input.DockerUser, builderImageName}, "/"), builderImageTag}, ":"),
+					Name:  builderImageName,
+					Image: strings.Join([]string{strings.Join([]string{input.DockerRegistryDomain, input.DockerUser, builderImageName}, "/"), builderImageTag}, ":"),
+					Args: []string{
+						input.GitRepoUrl,
+						input.GitBranch,
+						input.ReleaseVersion,
+					},
 					ImagePullPolicy: corev1.PullAlways,
 					VolumeMounts: []corev1.VolumeMount{
 						corev1.VolumeMount{
@@ -99,10 +104,6 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 						corev1.EnvVar{
 							Name:  DOCKER_USERNAME_ENV_VAR,
 							Value: input.DockerUser,
-						},
-						corev1.EnvVar{
-							Name:  GIT_REPO_NAME_ENV_VAR,
-							Value: input.RepoName,
 						},
 						corev1.EnvVar{
 							Name: GITHUB_USERNAME_ENV_VAR,

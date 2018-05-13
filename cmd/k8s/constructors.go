@@ -76,5 +76,7 @@ func NewImageBuilderTemplate() *ImageBuilderTemplate {
 	i.DockerUser = utils.GetDockerhubUser()
 	i.DockerRegistry = DOCKER_REGISTRY
 	i.DockerRegistryDomain = DOCKER_REGISTRY_DOMAIN
+	i.GitBranch = DEFAULT_GIT_BRANCH
+	i.ReleaseVersion = DEFAULT_RELEASE_VERSION
 	return &i
 }
