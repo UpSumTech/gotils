@@ -2,7 +2,9 @@
 cat input.json
 
 {
-  "github_user": "sumanmukherjee03"
+  "github_user": "sumanmukherjee03",
+  "github_email": "sumanmukherjee03@gmail.com",
+  "github_user_fullname": "Suman Mukherjee"
 }
 */
 
@@ -37,7 +39,9 @@ func genSecretGithubTokenTemplate(input GithubTokenSecretTemplate) *corev1.Secre
 			GITHUB_TOKEN_SECRET_KEY: []byte(input.GithubToken),
 		},
 		StringData: map[string]string{
-			GITHUB_USERNAME_SECRET_KEY: input.GithubUser,
+			GITHUB_USERNAME_SECRET_KEY:      input.GithubUser,
+			GITHUB_USER_FULLNAME_SECRET_KEY: input.GithubUserFullname,
+			GITHUB_EMAIL_SECRET_KEY:         input.GithubEmail,
 		},
 		Type: corev1.SecretTypeOpaque,
 	}

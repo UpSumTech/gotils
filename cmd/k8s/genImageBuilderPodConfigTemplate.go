@@ -121,6 +121,28 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 							},
 						},
 						corev1.EnvVar{
+							Name: GITHUB_USER_FULLNAME_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_USER_FULLNAME_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
+							Name: GITHUB_EMAIL_ENV_VAR,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: GITHUB_TOKEN_SECRET_NAME,
+									},
+									Key: GITHUB_EMAIL_SECRET_KEY,
+								},
+							},
+						},
+						corev1.EnvVar{
 							Name: GITHUB_TOKEN_ENV_VAR,
 							ValueFrom: &corev1.EnvVarSource{
 								SecretKeyRef: &corev1.SecretKeySelector{

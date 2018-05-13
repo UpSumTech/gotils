@@ -1,31 +1,35 @@
 package k8s
 
 const (
-	CPU_LIMIT                    = "500m"
-	MEM_LIMIT                    = "500Mi"
-	CPU_REQUEST                  = "100m"
-	MEM_REQUEST                  = "100Mi"
-	TERMINATION_LIMIT_SECS       = 120
-	DEADLINE_LIMIT_SECS          = 600
-	DOCKER_USERNAME_ENV_VAR      = "DOCKERHUB_USERNAME"
-	DOCKER_CONFIG_SECRET_NAME    = "docker-config"
-	DOCKER_REGISTRY              = "https://index.docker.io/v1"
-	DOCKER_REGISTRY_DOMAIN       = "index.docker.io"
-	GITHUB_TOKEN_SECRET_NAME     = "github-token"
-	GITHUB_TOKEN_SECRET_KEY      = "token"
-	GITHUB_USERNAME_SECRET_KEY   = "user"
-	GITHUB_USERNAME_ENV_VAR      = "GITHUB_USERNAME"
-	GITHUB_TOKEN_ENV_VAR         = "DEPLOY_GITHUB_TOKEN"
-	BINTRAY_TOKEN_SECRET_NAME    = "bintray-token"
-	BINTRAY_TOKEN_SECRET_KEY     = "token"
-	BINTRAY_USERNAME_SECRET_KEY  = "user"
-	BINTRAY_REPO_NAME_SECRET_KEY = "repo"
-	BINTRAY_USERNAME_ENV_VAR     = "BINTRAY_USERNAME"
-	BINTRAY_TOKEN_ENV_VAR        = "BINTRAY_API_KEY"
-	BINTRAY_REPO_NAME_ENV_VAR    = "BINTRAY_REPO_NAME"
-	GIT_REPO_NAME_ENV_VAR        = "GIT_REPO_NAME"
-	DEFAULT_GIT_BRANCH           = "master"
-	DEFAULT_RELEASE_VERSION      = "patch"
+	CPU_LIMIT                       = "500m"
+	MEM_LIMIT                       = "500Mi"
+	CPU_REQUEST                     = "100m"
+	MEM_REQUEST                     = "100Mi"
+	TERMINATION_LIMIT_SECS          = 120
+	DEADLINE_LIMIT_SECS             = 600
+	DOCKER_USERNAME_ENV_VAR         = "DOCKERHUB_USERNAME"
+	DOCKER_CONFIG_SECRET_NAME       = "docker-config"
+	DOCKER_REGISTRY                 = "https://index.docker.io/v1"
+	DOCKER_REGISTRY_DOMAIN          = "index.docker.io"
+	GITHUB_TOKEN_SECRET_NAME        = "github-token"
+	GITHUB_TOKEN_SECRET_KEY         = "token"
+	GITHUB_USERNAME_SECRET_KEY      = "user"
+	GITHUB_EMAIL_SECRET_KEY         = "email"
+	GITHUB_USER_FULLNAME_SECRET_KEY = "fullname"
+	GITHUB_USERNAME_ENV_VAR         = "GITHUB_USERNAME"
+	GITHUB_USER_FULLNAME_ENV_VAR    = "GIT_USER"
+	GITHUB_EMAIL_ENV_VAR            = "GIT_EMAIL"
+	GITHUB_TOKEN_ENV_VAR            = "DEPLOY_GITHUB_TOKEN"
+	BINTRAY_TOKEN_SECRET_NAME       = "bintray-token"
+	BINTRAY_TOKEN_SECRET_KEY        = "token"
+	BINTRAY_USERNAME_SECRET_KEY     = "user"
+	BINTRAY_REPO_NAME_SECRET_KEY    = "repo"
+	BINTRAY_USERNAME_ENV_VAR        = "BINTRAY_USERNAME"
+	BINTRAY_TOKEN_ENV_VAR           = "BINTRAY_API_KEY"
+	BINTRAY_REPO_NAME_ENV_VAR       = "BINTRAY_REPO_NAME"
+	GIT_REPO_NAME_ENV_VAR           = "GIT_REPO_NAME"
+	DEFAULT_GIT_BRANCH              = "master"
+	DEFAULT_RELEASE_VERSION         = "patch"
 )
 
 type JsonInput interface {
@@ -66,8 +70,10 @@ func (i *DockerConfigSecretTemplate) build() interface{}          { return genSe
 func (i *DockerConfigSecretTemplate) jsonOutput() (string, error) { return getJsonTemplateOutput(i) }
 
 type GithubTokenSecretTemplate struct {
-	GithubUser  string `json:"github_user" validate:"required"`
-	GithubToken string `json:"github_token" validate:"required"`
+	GithubUser         string `json:"github_user" validate:"required"`
+	GithubUserFullname string `json:"github_user_fullname" validate:"required"`
+	GithubEmail        string `json:"github_email" validate:"required"`
+	GithubToken        string `json:"github_token" validate:"required"`
 }
 
 func (i *GithubTokenSecretTemplate) readInput() error            { return readJson(i, src) }
