@@ -333,7 +333,7 @@ checks_for_existing_build : check_deps check_existing_docker_tag check_existing_
 checks_logged_into_dockerhub :
 	$(info [INFO] --- Checks that user is logged into dockerhub)
 	$(AT){ test -d "$$HOME/.docker" && test ! -z "$$(cat "$$HOME/.docker/config.json" | jq -r '.auths | .[] | .auth')"; } \
-	|| { test -d "$$HOME/.dockercfg" && test ! -z "$$(cat "$$HOME/.dockercfg" | jq -r '.auths | .[] | .auth')"; }
+	|| { test -f "$$HOME/.dockercfg" && test ! -z "$$(cat "$$HOME/.dockercfg" | jq -r '.auths | .[] | .auth')"; }
 
 $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
