@@ -129,6 +129,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 		&& cd $(REPO_NAME) \
 		&& git checkout $(GIT_SHA) \
 		&& docker build \
+			--no-cache \
 			--build-arg GITHUB_USERNAME=$(GITHUB_USERNAME) \
 			--build-arg GIT_TAG=$(TAG) \
 			--build-arg BUILD_TIME=$(BUILD_TIME) \
