@@ -60,6 +60,7 @@ BUILD_TIME := $(shell date --utc +"%Y-%m-%d-%H-%M-%S-UTC")
 TMPDIR_FOR_BUILD :=$(shell mktemp -d "/tmp/$(REPO_NAME).XXXXXXX")
 BUILDER_IMAGE_NAME := $(REPO_NAME)-builder
 BUILDER_CONTAINER_NAME := $(BUILDER_IMAGE_NAME)-container
+BUILDER_DATA_DIR ?= $(ROOT_DIR)/dist
 
 # This is programatically set if a TAG is passed from the cli
 IS_TAG_FROM_CLI := 0
@@ -157,11 +158,11 @@ endif
 # Pushes the git tag
 release: build
 	$(info [INFO] --- Create release candidate)
-	$(AT)mkdir -p dist
+	$(AT)mkdir -p $(BUILDER_DATA_DIR)
 	$(AT)docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
-		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/gotils.tar.gz dist/gotils-$(TAG).tar.gz \
+		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/gotils.tar.gz $(BUILDER_DATA_DIR)/gotils-$(TAG).tar.gz \
 		&& curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"name": "$(TAG)", "vcs_tag": "$(TAG)", "released": "$(BUILD_TIME)"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/versions \
-		&& curl -T dist/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
+		&& curl -T $(BUILDER_DATA_DIR)/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
 	$(AT)docker stop $(BUILDER_CONTAINER_NAME)
 	$(AT)docker rm $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)

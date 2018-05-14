@@ -30,6 +30,8 @@ const (
 	GIT_REPO_NAME_ENV_VAR           = "GIT_REPO_NAME"
 	DEFAULT_GIT_BRANCH              = "master"
 	DEFAULT_RELEASE_VERSION         = "patch"
+	BUILDER_DATA_DIR_ENV_VAR        = "BUILDER_DATA_DIR"
+	DEFAULT_BUILDER_DATA_DIR        = "/var/data/build"
 )
 
 type JsonInput interface {

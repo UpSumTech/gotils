@@ -90,7 +90,7 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 					VolumeMounts: []corev1.VolumeMount{
 						corev1.VolumeMount{
 							Name:      "builder-data",
-							MountPath: "/var/data/build",
+							MountPath: DEFAULT_BUILDER_DATA_DIR,
 							ReadOnly:  false,
 						},
 						corev1.VolumeMount{
@@ -108,6 +108,10 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 						corev1.EnvVar{
 							Name:  DOCKER_USERNAME_ENV_VAR,
 							Value: input.DockerUser,
+						},
+						corev1.EnvVar{
+							Name:  BUILDER_DATA_DIR_ENV_VAR,
+							Value: DEFAULT_BUILDER_DATA_DIR,
 						},
 						corev1.EnvVar{
 							Name: GITHUB_USERNAME_ENV_VAR,
