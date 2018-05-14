@@ -90,10 +90,12 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 						corev1.VolumeMount{
 							Name:      "artifact-data",
 							MountPath: "/var/data/build",
+							ReadOnly:  false,
 						},
 						corev1.VolumeMount{
 							Name:      "dshm",
 							MountPath: "/dev/shm",
+							ReadOnly:  false,
 						},
 					},
 					Env: append(getDefaultEnvVars(), []corev1.EnvVar{
@@ -135,10 +137,12 @@ func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
 						corev1.VolumeMount{
 							Name:      "artifact-data",
 							MountPath: "/var/data/build",
+							ReadOnly:  false,
 						},
 						corev1.VolumeMount{
 							Name:      "dshm",
 							MountPath: "/dev/shm",
+							ReadOnly:  false,
 						},
 					},
 					Env: append(getDefaultEnvVars(), []corev1.EnvVar{

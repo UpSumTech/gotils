@@ -91,7 +91,7 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 						corev1.VolumeMount{
 							Name:      "builder-data",
 							MountPath: "/var/data/build",
-							ReadOnly:  true,
+							ReadOnly:  false,
 						},
 						corev1.VolumeMount{
 							Name:      "docker-socket",
@@ -189,7 +189,8 @@ func genImageBuilderPodConfigTemplate(input ImageBuilderTemplate) *corev1.Pod {
 					}...),
 					Resources: getResourceRequirements(input.Limits, input.Requests),
 					SecurityContext: &corev1.SecurityContext{
-						Privileged: utils.BoolPtr(true),
+						Privileged:             utils.BoolPtr(true),
+						ReadOnlyRootFilesystem: utils.BoolPtr(false),
 					},
 				},
 			},
