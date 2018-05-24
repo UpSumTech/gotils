@@ -32,6 +32,9 @@ const (
 	DEFAULT_RELEASE_VERSION         = "patch"
 	BUILDER_DATA_DIR_ENV_VAR        = "BUILDER_DATA_DIR"
 	DEFAULT_BUILDER_DATA_DIR        = "/var/data/build"
+	LABEL_RUN_KEY                   = "run"
+	LABEL_SERVER_KEY                = "server"
+	LABEL_APP_KEY                   = "app"
 )
 
 type JsonInput interface {

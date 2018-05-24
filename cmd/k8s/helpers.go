@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -178,4 +179,9 @@ func getJsonTemplateOutput(i K8sTemplate) (string, error) {
 	}
 
 	return data, nil
+}
+
+func getIntOrStringPtr(s string) *intstr.IntOrString {
+	ios := intstr.Parse(s)
+	return &ios
 }
