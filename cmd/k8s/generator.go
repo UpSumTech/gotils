@@ -14,6 +14,7 @@ const (
 	IMAGE_BUILDER_POD     = "image_builder_pod"
 	ARTIFACT_BUILDER_POD  = "artifact_builder_pod"
 	WEB_SERVER_DEPLOYMENT = "web_server_deployment"
+	SERVICE               = "service"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 		IMAGE_BUILDER_POD:     true,
 		ARTIFACT_BUILDER_POD:  true,
 		WEB_SERVER_DEPLOYMENT: true,
+		SERVICE:               true,
 	}
 	src                 string
 	dest                string
@@ -93,7 +95,7 @@ func NewK8sGenerator() *cobra.Command {
 ////////////////////////// Unexported funcs //////////////////////////
 
 func genTemplate(key string) {
-	var input K8sTemplate
+	var input k8sTemplate
 	switch key {
 	case BINTRAY_TOKEN_SECRET:
 		input = NewBintrayTokenSecretTemplate()
@@ -107,6 +109,8 @@ func genTemplate(key string) {
 		input = NewJobArtifactTemplate()
 	case WEB_SERVER_DEPLOYMENT:
 		input = NewWebServerDeployment()
+	case SERVICE:
+		input = NewServiceTemplate()
 	}
 
 	data, err := input.jsonOutput()

@@ -80,3 +80,9 @@ func NewImageBuilderTemplate() *ImageBuilderTemplate {
 	i.ReleaseVersion = DEFAULT_RELEASE_VERSION
 	return &i
 }
+
+func NewServiceTemplate() *ServiceTemplate {
+	i := ServiceTemplate{}
+	i.Category = SERVICE_TYPE_EXTERNAL
+	return &i
+}

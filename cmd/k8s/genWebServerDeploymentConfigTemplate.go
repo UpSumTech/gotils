@@ -28,11 +28,12 @@ import (
 
 func genWebServerDeploymentTemplate(input WebServerDeployment) *appsv1.Deployment {
 	deploymentName := strings.Join([]string{"deployment", imageName, imageTag}, "-")
+	runLabel := strings.Join([]string{imageName, imageTag}, "-")
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: deploymentName,
 			Labels: map[string]string{
-				LABEL_RUN_KEY:    deploymentName,
+				LABEL_RUN_KEY:    runLabel,
 				LABEL_SERVER_KEY: "web",
 				LABEL_APP_KEY:    imageName,
 			},
@@ -41,7 +42,7 @@ func genWebServerDeploymentTemplate(input WebServerDeployment) *appsv1.Deploymen
 			Replicas: utils.Int32Ptr(2),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					LABEL_RUN_KEY:    deploymentName,
+					LABEL_RUN_KEY:    runLabel,
 					LABEL_SERVER_KEY: "web",
 					LABEL_APP_KEY:    imageName,
 				},
@@ -56,7 +57,7 @@ func genWebServerDeploymentTemplate(input WebServerDeployment) *appsv1.Deploymen
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						LABEL_RUN_KEY:    deploymentName,
+						LABEL_RUN_KEY:    runLabel,
 						LABEL_SERVER_KEY: "web",
 						LABEL_APP_KEY:    imageName,
 					},

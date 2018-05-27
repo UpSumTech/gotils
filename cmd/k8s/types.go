@@ -35,21 +35,22 @@ const (
 	LABEL_RUN_KEY                   = "run"
 	LABEL_SERVER_KEY                = "server"
 	LABEL_APP_KEY                   = "app"
+	CLUSTER_IP_DEFAULT              = "None"
 )
 
-type JsonInput interface {
+type jsonInput interface {
 	readInput() error
 	validateInput() error
 }
 
-type JsonOutput interface {
+type jsonOutput interface {
 	jsonOutput() (string, error)
 }
 
-type K8sTemplate interface {
-	JsonInput
+type k8sTemplate interface {
+	jsonInput
 	build() interface{}
-	JsonOutput
+	jsonOutput
 }
 
 type ResourceLimitConfig struct {
@@ -146,3 +147,19 @@ func (i *ImageBuilderTemplate) readInput() error            { return readJson(i,
 func (i *ImageBuilderTemplate) validateInput() error        { return validateJsonInput(i) }
 func (i *ImageBuilderTemplate) build() interface{}          { return genImageBuilderPodConfigTemplate(*i) }
 func (i *ImageBuilderTemplate) jsonOutput() (string, error) { return getJsonTemplateOutput(i) }
+
+type ServiceCategory string
+
+const (
+	SERVICE_TYPE_INTERNAL ServiceCategory = "Internal"
+	SERVICE_TYPE_EXTERNAL ServiceCategory = "External"
+)
+
+type ServiceTemplate struct {
+	Category ServiceCategory `json:"category" validate:"required"`
+}
+
+func (i *ServiceTemplate) readInput() error            { return readJson(i, src) }
+func (i *ServiceTemplate) validateInput() error        { return validateJsonInput(i) }
+func (i *ServiceTemplate) build() interface{}          { return genServiceTemplate(*i) }
+func (i *ServiceTemplate) jsonOutput() (string, error) { return getJsonTemplateOutput(i) }

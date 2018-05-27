@@ -136,7 +136,7 @@ func getDefaultEnvVars() []corev1.EnvVar {
 	}
 }
 
-func readJson(i JsonInput, src string) error {
+func readJson(i jsonInput, src string) error {
 	r, err := ioutil.ReadFile(src)
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func readJson(i JsonInput, src string) error {
 	return nil
 }
 
-func validateJsonInput(i JsonInput) error {
+func validateJsonInput(i jsonInput) error {
 	validate := validator.New()
 	err := validate.Struct(i)
 	if err != nil {
@@ -159,7 +159,7 @@ func hostPathTypePtr(h corev1.HostPathType) *corev1.HostPathType {
 	return &x
 }
 
-func getJsonTemplateOutput(i K8sTemplate) (string, error) {
+func getJsonTemplateOutput(i k8sTemplate) (string, error) {
 	var data string
 
 	err := i.readInput()
