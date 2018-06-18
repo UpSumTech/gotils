@@ -273,8 +273,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
-  version = "v9.15.0"
+  revision = "f28cb45dc0f0f406ba2015cdb59a5203ad220bc2"
+  version = "v9.17.1"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -425,6 +425,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29bfba20bd1b4e5ddfd27a76c1612c41e80ff4730eecd46fe822c7a401ff7436"
+  inputs-digest = "e6f935b79d7682452c9379cfb721188243daed2e3e02ab4704bbe99646c18b87"
   solver-name = "gps-cdcl"
   solver-version = 1
