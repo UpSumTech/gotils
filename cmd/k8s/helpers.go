@@ -118,6 +118,14 @@ func getDefaultEnvVars() []corev1.EnvVar {
 			},
 		},
 		corev1.EnvVar{
+			Name: "HOST_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "status.hostIP",
+				},
+			},
+		},
+		corev1.EnvVar{
 			Name: "SERVICE_ACCOUNT_NAME",
 			ValueFrom: &corev1.EnvVarSource{
 				FieldRef: &corev1.ObjectFieldSelector{
