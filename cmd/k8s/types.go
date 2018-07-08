@@ -111,7 +111,7 @@ type JobArtifactTemplate struct {
 
 func (i *JobArtifactTemplate) readInput() error            { return readJson(i, src) }
 func (i *JobArtifactTemplate) validateInput() error        { return validateJsonInput(i) }
-func (i *JobArtifactTemplate) build() interface{}          { return genJobArtifactTemplate(*i) }
+func (i *JobArtifactTemplate) build() interface{}          { return genArtifactJobTemplate(*i) }
 func (i *JobArtifactTemplate) jsonOutput() (string, error) { return getJsonTemplateOutput(i) }
 
 type WebServerDeployment struct {

@@ -26,7 +26,7 @@ import (
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 )
 
-func genJobArtifactTemplate(input JobArtifactTemplate) *corev1.Pod {
+func genArtifactJobTemplate(input JobArtifactTemplate) *corev1.Pod {
 	if len(volumeImageName) == 0 {
 		utils.CheckErr("You need to provide a name for the volume image that holds the artifact to download")
 	}
