@@ -8,7 +8,7 @@ SHELL := /usr/bin/env bash
 ##########################################################################################
 ## App level vars
 
--include Makefile.app.vars
+include Makefile.app.vars
 
 ##########################################################################################
 ## Functions
@@ -140,8 +140,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg NON_ROOT_GID=$(NON_ROOT_GID) \
 			--build-arg NON_ROOT_USER=default \
 			-f Dockerfile \
-			-t $(BUILDER_IMAGE_NAME):$(TAG) \
-			"$(GIT_REPO_URL)#$(GIT_SHA)"
+			-t $(BUILDER_IMAGE_NAME):$(TAG) .
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
 	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
@@ -161,9 +160,9 @@ release: build
 	$(info [INFO] --- Create release candidate)
 	$(AT)mkdir -p $(BUILDER_DATA_DIR)
 	$(AT)docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
-		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/gotils.tar.gz $(BUILDER_DATA_DIR)/gotils-$(TAG).tar.gz \
+		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/$(REPO_NAME).tar.gz $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz \
 		&& curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"name": "$(TAG)", "vcs_tag": "$(TAG)", "released": "$(BUILD_TIME)"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/versions \
-		&& curl -T $(BUILDER_DATA_DIR)/gotils-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/gotils-$(TAG).tar.gz?publish=1
+		&& curl -T $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -d '{"discard": "false"}' $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/$(REPO_NAME)-$(TAG).tar.gz?publish=1
 	$(AT)docker stop $(BUILDER_CONTAINER_NAME)
 	$(AT)docker rm $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
@@ -259,7 +258,7 @@ check_working_dir_status :
 	$(info [INFO] --- Checks the status of the working directory)
 	$(AT)git symbolic-ref --short --quiet HEAD \
 	&& git diff-index --quiet HEAD -- \
-	&& git status -uno | grep 'up-to-date' \
+	&& git status -uno | grep -E '(up-to-date|up\ to\ date)' \
 	&& ! git show-ref --tags | grep -v -F "$$(git ls-remote --tags $(GIT_REPO_URL) | grep -v '\^{}' | cut -f2)"
 
 # Checks if you have the WIP flag enabled then you are not on stable branches like master or develop
@@ -293,6 +292,7 @@ endif
 # Check for git tag on remote
 # Check for docker tag on docker repo
 check_no_existing_tag_on_remote :
+	echo '$(VERSION)'
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the new tag does not exist on git remote or on remote docker repo)
 	$(AT)! git ls-remote --tags $(GIT_REPO_URL) | grep '$(TAG)'
@@ -300,6 +300,7 @@ check_no_existing_tag_on_remote :
 # Check for git tag locally
 # Check for docker tag locally
 check_no_existing_tag_locally :
+	echo '$(VERSION)'
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the new tag does not exist on git locally or on docker client locally)
 	$(AT)! git tag | grep '$(TAG)' \
@@ -317,6 +318,7 @@ checks_for_new_build : check_deps check_working_dir_status check_branch check_no
 # Check for docker tag locally
 # Check for docker tag on remote
 check_existing_docker_tag :
+	echo '$(VERSION)'
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the tag passed from the cli exists on docker client locally or on docker repo on remote)
 	$(AT)docker images | grep -i "$(BUILDER_IMAGE_NAME)" | grep "$(TAG)"
@@ -324,6 +326,7 @@ check_existing_docker_tag :
 # Check for git tag locally
 # Check for git tag on remote
 check_existing_git_tag :
+	echo '$(VERSION)'
 	echo '$(TAG)'
 	$(info [INFO] --- Checks that the tag passed from the cli exists on git locally or on git repo on remote)
 	$(AT)git ls-remote --tags $(GIT_REPO_URL) | grep '$(TAG)' \
@@ -334,8 +337,8 @@ checks_for_existing_build : check_deps check_existing_docker_tag check_existing_
 # Checks that user is logged into dockerhub
 checks_logged_into_dockerhub :
 	$(info [INFO] --- Checks that user is logged into dockerhub)
-	$(AT){ test -d "$$HOME/.docker" && test ! -z "$$(cat "$$HOME/.docker/config.json" | jq -r '.auths | .[] | .auth')"; } \
-	|| { test -f "$$HOME/.dockercfg" && test ! -z "$$(cat "$$HOME/.dockercfg" | jq -r '.auths | .[] | .auth')"; }
+	$(AT){ test -d "$$HOME/.docker" && test ! -z "$$(cat "$$HOME/.docker/config.json" | jq -r '.auths | ."https://index.docker.io/v1/" | .auth')"; } \
+	|| { test -f "$$HOME/.dockercfg" && test ! -z "$$(cat "$$HOME/.dockercfg" | jq -r '.auths | ."https://index.docker.io/v1/" | .auth')"; }
 
 $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
