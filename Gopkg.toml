@@ -22,10 +22,6 @@
 
 [[ constraint ]]
   branch = "master"
-  name = "github.com/awslabs/goformation"
-
-[[ constraint ]]
-  branch = "master"
   name = "k8s.io/api"
 
 [[ constraint ]]
@@ -39,6 +35,10 @@
 [[ constraint ]]
   name = "gopkg.in/go-playground/validator.v9"
   branch = "v9"
+
+[[ constraint ]]
+  branch = "master"
+  name = "github.com/aws/aws-sdk-go"
 
 # [[ constraint ]]
   # name = "golang.org/x/crypto"

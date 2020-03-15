@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	awsShortDesc = "Provides aws specific tooling capability like custom cloudformation template generation"
+	awsShortDesc = "Provides aws specific tooling"
 	awsLongDesc  = `Provides added capability for aws related stuff.
 		For example it can generate cloudformation templates etc.`
 	awsExample = `
 	### Available commands for aws
-	gotils aws (generate)`
+	gotils aws (ec2|s3)`
 	aws_access_key_id     string
 	aws_secret_access_key string
 	aws_account_id        string
@@ -33,7 +33,7 @@ func InitAws() *cobra.Command {
 		TraverseChildren: true,
 	}
 
-	cmd.AddCommand(NewAwsCfGenerator())
+	cmd.AddCommand(NewAwsEC2Cmds())
 	cmd.Flags().StringVarP(&aws_access_key_id, "aws_access_key_id", "", "", "Aws access key id")
 	cmd.Flags().StringVarP(&aws_secret_access_key, "aws_secret_access_key", "", "", "Aws secret access key")
 	cmd.Flags().StringVarP(&aws_region, "aws_region", "", "", "Aws region")
