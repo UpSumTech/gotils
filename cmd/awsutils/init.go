@@ -1,4 +1,4 @@
-package aws
+package awsutils
 
 import (
 	"github.com/spf13/cobra"

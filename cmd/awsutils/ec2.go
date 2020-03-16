@@ -1,11 +1,11 @@
-package aws
+package awsutils
 
 import (
 	"fmt"
 	"log"
 	"github.com/spf13/cobra"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
-	awsSdk "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -62,12 +62,12 @@ func ec2FindByTag(tag string, val string) {
 	params := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			{
-				Name:   awsSdk.String(fmt.Sprintf("tag:%s", tag)),
-				Values: []*string{awsSdk.String(val)},
+				Name:   aws.String(fmt.Sprintf("tag:%s", tag)),
+				Values: []*string{aws.String(val)},
 			},
 			{
-				Name:   awsSdk.String("instance-state-name"),
-				Values: []*string{awsSdk.String("running"), awsSdk.String("pending")},
+				Name:   aws.String("instance-state-name"),
+				Values: []*string{aws.String("running"), aws.String("pending")},
 			},
 		},
 	}

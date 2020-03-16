@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/sumanmukherjee03/gotils/cmd/aws"
+	"github.com/sumanmukherjee03/gotils/cmd/awsutils"
 	"github.com/sumanmukherjee03/gotils/cmd/k8s"
 	"github.com/sumanmukherjee03/gotils/cmd/logparser"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
@@ -32,7 +32,7 @@ func main() {
 	viper.BindPFlag("dryrun", rootCmd.PersistentFlags().Lookup("dryrun"))
 	viper.BindPFlag("viper", rootCmd.PersistentFlags().Lookup("viper"))
 	rootCmd.AddCommand(logparser.InitLogParser())
-	rootCmd.AddCommand(aws.InitAws())
+	rootCmd.AddCommand(awsutils.InitAws())
 	rootCmd.AddCommand(k8s.InitK8s())
 	rootCmd.Execute()
 }
