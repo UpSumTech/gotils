@@ -8,7 +8,7 @@ import (
 var (
 	awsShortDesc = "Provides aws specific tooling"
 	awsLongDesc  = `Provides added capability for aws related stuff.
-		For example it can generate cloudformation templates etc.`
+		For example it can interact with aws resources through the api for convenient tasks`
 	awsExample = `
 	### Available commands for aws
 	gotils aws (ec2|s3)`

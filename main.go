@@ -6,6 +6,7 @@ import (
 	"github.com/sumanmukherjee03/gotils/cmd/awsutils"
 	"github.com/sumanmukherjee03/gotils/cmd/k8s"
 	"github.com/sumanmukherjee03/gotils/cmd/logparser"
+	"github.com/sumanmukherjee03/gotils/cmd/sshutils"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 )
 
@@ -26,7 +27,7 @@ func main() {
 	}
 
 	cobra.OnInitialize(func() { utils.InitConfig(cfgFile) })
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotils.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gotils.yml)")
 	rootCmd.PersistentFlags().BoolVarP(&Dryrun, "dryrun", "", false, "dryrun")
 	rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
 	viper.BindPFlag("dryrun", rootCmd.PersistentFlags().Lookup("dryrun"))
@@ -34,5 +35,6 @@ func main() {
 	rootCmd.AddCommand(logparser.InitLogParser())
 	rootCmd.AddCommand(awsutils.InitAws())
 	rootCmd.AddCommand(k8s.InitK8s())
+	rootCmd.AddCommand(sshutils.InitSsh())
 	rootCmd.Execute()
 }
