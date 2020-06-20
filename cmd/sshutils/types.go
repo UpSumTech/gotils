@@ -16,4 +16,5 @@ type TerminalConfig struct {
 type RemoteShellConn struct {
 	Session        *ssh.Session
 	TerminalConfig *TerminalConfig
+	InteractivePty bool
 }

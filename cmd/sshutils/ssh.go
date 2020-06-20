@@ -3,15 +3,11 @@ package sshutils
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"net"
-	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
-	"golang.org/x/crypto/ssh"
 )
 
 var (
@@ -65,113 +61,12 @@ func NewSSHConnectCmd() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			r, err := Terminal()
+			r, err := NewRemoteShellConn(true)
 			if err != nil {
 				utils.CheckErr(fmt.Sprintf("assigning pseudo terminal failed: %s", err))
 			}
-			Start(r)
+			r.StartInteractiveShell()
 		},
 	}
 	return cmd
-}
-
-// PublicKey - function to get the public key by reading the private key
-func PublicKey() (ssh.AuthMethod, error) {
-	buf, err := ioutil.ReadFile(ssh_private_key_path)
-	if err != nil {
-		return nil, err
-	}
-	signer, err := ssh.ParsePrivateKey(buf)
-	if err != nil {
-		return nil, err
-	}
-	return ssh.PublicKeys(signer), nil
-}
-
-// Config - returns a valid ssh config to dial the server with
-func Config() (*ssh.ClientConfig, error) {
-	pubkey, err := PublicKey()
-	if err != nil {
-		return nil, err
-	}
-	cfg := &ssh.ClientConfig{
-		User: ssh_username,
-		Auth: []ssh.AuthMethod{
-			pubkey,
-		},
-		HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error { return nil }),
-	}
-	return cfg, nil
-}
-
-// Client - returns a valid ssh client
-func Client() (*ssh.Client, error) {
-	cfg, err := Config()
-	if err != nil {
-		return nil, err
-	}
-	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ssh_host, ssh_port), cfg)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
-}
-
-// Session - returns a valid ssh session
-func Session() (*ssh.Session, error) {
-	conn, err := Client()
-	if err != nil {
-		return nil, err
-	}
-	session, err := conn.NewSession()
-	if err != nil {
-		return nil, err
-	}
-	session.Stdin = os.Stdin
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
-	return session, nil
-}
-
-// Terminal - create a new interactive terminal
-func Terminal() (*RemoteShellConn, error) {
-	session, err := Session()
-	if err != nil {
-		return nil, err
-	}
-	t := &TerminalConfig{
-		Terminal: "xterm",
-		Height:   80,
-		Width:    40,
-		Modes: ssh.TerminalModes{
-			ssh.ECHO:          0,     // disable echoing
-			ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-			ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
-		},
-	}
-	r := RemoteShellConn{
-		Session:        session,
-		TerminalConfig: t,
-	}
-	return &r, nil
-}
-
-// Start - starts an interactive terminal session and wait
-func Start(r *RemoteShellConn) {
-	fmt.Println("Starting remote shell")
-	fmt.Println(r)
-	if err := r.Session.RequestPty(r.TerminalConfig.Terminal, r.TerminalConfig.Height, r.TerminalConfig.Width, r.TerminalConfig.Modes); err != nil {
-		r.Session.Close()
-		utils.CheckErr(fmt.Sprintf("request for pseudo terminal failed: %s", err))
-	}
-
-	if err := r.Session.Shell(); err != nil {
-		r.Session.Close()
-		utils.CheckErr(fmt.Sprintf("request for opening a remote shell: %s", err))
-	}
-
-	if err := r.Session.Wait(); err != nil {
-		r.Session.Close()
-		utils.CheckErr(fmt.Sprintf("remote shell did not wait: %s", err))
-	}
 }
