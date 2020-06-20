@@ -17,6 +17,7 @@ var (
 	ssh_config_path      string
 	ssh_username         string
 	ssh_host             string
+	ssh_port             int
 )
 
 func InitSsh() *cobra.Command {

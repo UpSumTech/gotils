@@ -314,9 +314,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
+  digest = "1:ae38a56e386a576a45ca89870c379224062f1cc9a9763f7b165567f3f317f4a1"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/chacha20",
+    "poly1305",
+    "ssh",
+    "ssh/terminal",
+  ]
   pruneopts = "UT"
   revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
 
@@ -562,6 +570,7 @@
     "github.com/mitchellh/go-homedir",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "golang.org/x/crypto/ssh",
     "gopkg.in/go-playground/validator.v9",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",

@@ -40,6 +40,10 @@
   branch = "master"
   name = "github.com/aws/aws-sdk-go"
 
+[[ constraint ]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
 # [[ constraint ]]
   # name = "golang.org/x/crypto"
 
