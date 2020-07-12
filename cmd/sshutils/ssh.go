@@ -39,6 +39,9 @@ func NewSSHConnectCmd() *cobra.Command {
 			if len(ssh_config_path) == 0 {
 				ssh_config_path = viper.GetString("ssh.config_path")
 			}
+			if ssh_with_ssm && len(ssh_aws_token_serial_number) == 0 {
+				ssh_aws_token_serial_number = viper.GetString("ssh.aws.token_serial_number")
+			}
 		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
@@ -61,7 +64,7 @@ func NewSSHConnectCmd() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			r, err := NewRemoteShellConn(true)
+			r, err := NewRemoteShellConn(true, ssh_with_ssm)
 			if err != nil {
 				utils.CheckErr(fmt.Sprintf("assigning pseudo terminal failed: %s", err))
 			}

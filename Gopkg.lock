@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8eb37f905e2b20c688f31b7abe572259ee8500025f12995c6da66bdb03285274"
+  digest = "1:5d889635cf50a0862ae8864c04c3ac4606781e0dc6ab4a581bde4fb8738db7bd"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -41,6 +41,7 @@
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/ec2",
+    "service/iam",
     "service/sts",
     "service/sts/stsiface",
   ]
@@ -564,6 +565,7 @@
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
+    "github.com/aws/aws-sdk-go/service/iam",
     "github.com/go-sql-driver/mysql",
     "github.com/jeromer/syslogparser/rfc3164",
     "github.com/jeromer/syslogparser/rfc5424",

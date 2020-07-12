@@ -9,7 +9,11 @@ import (
 )
 
 // NewRemoteShellConn - create a new remote shell connection object
-func NewRemoteShellConn(interactive bool) (*RemoteShellConn, error) {
+func NewRemoteShellConn(interactive bool, sshWithSsm bool) (*RemoteShellConn, error) {
+	if sshWithSsm {
+		awsConn := NewAwsConn()
+		awsConn.GetUser()
+	}
 	session, err := NewSession(os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		return nil, err
@@ -35,7 +39,7 @@ func NewRemoteShellConn(interactive bool) (*RemoteShellConn, error) {
 	return &r, nil
 }
 
-// Start - starts an interactive terminal session and wait
+// StartInteractiveShell - starts an interactive terminal session and wait
 func (r *RemoteShellConn) StartInteractiveShell() {
 	if !r.InteractivePty {
 		return

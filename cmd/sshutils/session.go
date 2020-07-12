@@ -34,19 +34,19 @@ func NewSession(stdin io.Reader, stdout io.Writer, stderr io.Writer) (*ssh.Sessi
 	if err != nil {
 		return nil, fmt.Errorf("Unable to setup stdin for session: %v", err)
 	}
-	go io.Copy(sessionStdin, stdin)
+	go io.Copy(sessionStdin, stdin) // Pipe to destination from source
 
 	sessionStdout, err := session.StdoutPipe()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to setup stdout for session: %v", err)
 	}
-	go io.Copy(stdout, sessionStdout)
+	go io.Copy(stdout, sessionStdout) // Pipe to destination from source
 
 	sessionStderr, err := session.StderrPipe()
 	if err != nil {
 		return nil, fmt.Errorf("Unable to setup stderr for session: %v", err)
 	}
-	go io.Copy(stderr, sessionStderr)
+	go io.Copy(stderr, sessionStderr) // Pipe to destination from source
 
 	return session, nil
 }
