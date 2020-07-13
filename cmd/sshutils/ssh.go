@@ -64,11 +64,15 @@ func NewSSHConnectCmd() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			r, err := NewRemoteShellConn(true, ssh_with_ssm)
-			if err != nil {
-				utils.CheckErr(fmt.Sprintf("assigning pseudo terminal failed: %s", err))
+			if ssh_with_ssm {
+				NewSsmShellConn(true)
+			} else {
+				r, err := NewSshShellConn(true)
+				if err != nil {
+					utils.CheckErr(fmt.Sprintf("assigning pseudo terminal failed: %s", err))
+				}
+				r.StartInteractiveShell()
 			}
-			r.StartInteractiveShell()
 		},
 	}
 	return cmd

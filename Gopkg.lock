@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5d889635cf50a0862ae8864c04c3ac4606781e0dc6ab4a581bde4fb8738db7bd"
+  digest = "1:62e63c901b4b963ea8011112761ec954c714e78e54a7a03b2481da3c88194678"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -36,12 +36,14 @@
     "private/protocol",
     "private/protocol/ec2query",
     "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/ec2",
     "service/iam",
+    "service/ssm",
     "service/sts",
     "service/sts/stsiface",
   ]
@@ -563,9 +565,12 @@
   analyzer-version = 1
   input-imports = [
     "github.com/aws/aws-sdk-go/aws",
+    "github.com/aws/aws-sdk-go/aws/credentials/stscreds",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/iam",
+    "github.com/aws/aws-sdk-go/service/ssm",
+    "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/jeromer/syslogparser/rfc3164",
     "github.com/jeromer/syslogparser/rfc5424",

@@ -3,17 +3,37 @@ package sshutils
 import (
 	"fmt"
 	"os"
+	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 	"golang.org/x/crypto/ssh"
 )
 
 // NewRemoteShellConn - create a new remote shell connection object
-func NewRemoteShellConn(interactive bool, sshWithSsm bool) (*RemoteShellConn, error) {
-	if sshWithSsm {
-		awsConn := NewAwsConn()
-		awsConn.GetUser()
+func NewSsmShellConn(interactive bool) error {
+	awsConn := NewAwsConn()
+	instanceId := awsConn.GetBastionInstance()
+
+	input := &ssm.StartSessionInput{
+		DocumentName: aws.String("AWS-StartSSHSession"),
+		Parameters: map[string][]*string{
+			"portNumber": []*string{aws.String(strconv.Itoa(ssh_port))},
+		},
+		Target: aws.String(instanceId),
 	}
+
+	ssmsvc := ssm.New(awsConn.Session, awsConn.Config)
+	out, err := ssmsvc.StartSession(input)
+	if err != nil {
+		return err
+	}
+	fmt.Println(*out.StreamUrl)
+	return nil
+}
+
+func NewSshShellConn(interactive bool) (*RemoteShellConn, error) {
 	session, err := NewSession(os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		return nil, err
