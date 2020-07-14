@@ -1,6 +1,7 @@
 package sshutils
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,12 +25,24 @@ func NewSsmShellConn(interactive bool) error {
 		Target: aws.String(instanceId),
 	}
 
-	ssmsvc := ssm.New(awsConn.Session, awsConn.Config)
-	out, err := ssmsvc.StartSession(input)
+	inputJson, err := json.Marshal(input)
 	if err != nil {
 		return err
 	}
-	fmt.Println(*out.StreamUrl)
+
+	ssmsvc := ssm.New(awsConn.Session, awsConn.Config)
+	ssmSession, err := ssmsvc.StartSession(input)
+	if err != nil {
+		return err
+	}
+
+	ssmSessionJson, err := json.Marshal(ssmSession)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(inputJson)
+	fmt.Println(ssmSessionJson)
 	return nil
 }
 
