@@ -22,11 +22,10 @@ func NewAwsConn() *AwsConn {
 	// You need this for entropy of the random string generation
 	rand.Seed(time.Now().UnixNano())
 
-	userName, ssmSessionTagVal := GetAwsUserInfo()
-	fmt.Println(userName)
-
+	_, ssmSessionTagVal := GetAwsUserInfo()
 	sess := awsSession.Must(awsSession.NewSession())
 
+	// Generate sts creds with ssm session tags
 	creds := stscreds.NewCredentials(sess, "arn:aws:iam::302586665182:role/MasterAccountBastionSessionManagerAccessRole", func(p *stscreds.AssumeRoleProvider) {
 		p.SerialNumber = aws.String(ssh_aws_token_serial_number)
 		p.TokenProvider = stscreds.StdinTokenProvider
@@ -44,6 +43,7 @@ func NewAwsConn() *AwsConn {
 		}
 	})
 
+	// Generate aws config for service calls with the temp sts creds
 	cfg := &aws.Config{
 		Region:                        aws.String("us-west-2"),
 		Credentials:                   creds,
