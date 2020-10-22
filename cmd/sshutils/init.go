@@ -19,6 +19,7 @@ var (
 	ssh_host                    string
 	ssh_port                    int
 	ssh_with_ssm                bool
+	ssh_ssm_plugin_name         string
 	ssh_aws_token_serial_number string
 )
 
@@ -36,11 +37,13 @@ func InitSsh() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&ssh_config_path, "ssh-config-path", "", "", "ssh config path")
 	cmd.PersistentFlags().StringVarP(&ssh_username, "ssh-username", "", "", "ssh username")
 	cmd.PersistentFlags().BoolVarP(&ssh_with_ssm, "ssh-with-ssm", "", false, "ssh with ssm")
+	cmd.PersistentFlags().StringVarP(&ssh_ssm_plugin_name, "ssh-ssm-plugin-name", "", "", "ssh ssm plugin name")
 	cmd.PersistentFlags().StringVarP(&ssh_aws_token_serial_number, "ssh-aws-token-serial-number", "", "", "ssh aws token serial number")
 	viper.BindPFlag("ssh.private_key_path", cmd.PersistentFlags().Lookup("ssh-private-key-path"))
 	viper.BindPFlag("ssh.public_key_path", cmd.PersistentFlags().Lookup("ssh-public-key-path"))
 	viper.BindPFlag("ssh.config_path", cmd.PersistentFlags().Lookup("ssh-config-path"))
 	viper.BindPFlag("ssh.username", cmd.PersistentFlags().Lookup("ssh-username"))
+	viper.BindPFlag("ssh.ssm_plugin_name", cmd.PersistentFlags().Lookup("ssh-ssm-plugin-name"))
 	viper.BindPFlag("ssh.aws.token_serial_number", cmd.PersistentFlags().Lookup("ssh-aws-token-serial-number"))
 	cmd.AddCommand(NewSSHConnectCmd())
 	return cmd

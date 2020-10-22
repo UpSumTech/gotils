@@ -1,7 +1,6 @@
 package sshutils
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	awsSession "github.com/aws/aws-sdk-go/aws/session"
 	"golang.org/x/crypto/ssh"
 )
@@ -23,5 +22,4 @@ type RemoteShellConn struct {
 
 type AwsConn struct {
 	Session *awsSession.Session
-	Config  *aws.Config
 }

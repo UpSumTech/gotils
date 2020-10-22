@@ -65,7 +65,17 @@ func NewSSHConnectCmd() *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			if ssh_with_ssm {
-				NewSsmShellConn(true)
+				awsConn, err := NewAwsConn()
+				if err != nil {
+					utils.CheckErr(fmt.Sprintf("generating new aws session failed", err))
+				}
+				cmd, err := NewSsmShellConn(awsConn, true)
+				if err != nil {
+					utils.CheckErr(fmt.Sprintf("establishing ssm connection or generating ssh command failed", err))
+				}
+				if err = cmd.Run(); err != nil {
+					utils.CheckErr(fmt.Sprintf("running shell for ssh command failed", err))
+				}
 			} else {
 				r, err := NewSshShellConn(true)
 				if err != nil {

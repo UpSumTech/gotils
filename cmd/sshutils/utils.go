@@ -9,8 +9,8 @@ import (
 )
 
 // PublicKey - function to get the public key by reading the private key
-func PublicKey() (ssh.AuthMethod, error) {
-	buf, err := ioutil.ReadFile(ssh_private_key_path)
+func PublicKey(pubKeyPath string) (ssh.AuthMethod, error) {
+	buf, err := ioutil.ReadFile(pubKeyPath)
 	if err != nil {
 		return nil, err
 	}
@@ -22,13 +22,13 @@ func PublicKey() (ssh.AuthMethod, error) {
 }
 
 // Config - returns a valid ssh config to dial the server with
-func Config() (*ssh.ClientConfig, error) {
-	pubkey, err := PublicKey()
+func Config(pubKeyPath string, sshUsername string) (*ssh.ClientConfig, error) {
+	pubkey, err := PublicKey(pubKeyPath)
 	if err != nil {
 		return nil, err
 	}
 	cfg := &ssh.ClientConfig{
-		User: ssh_username,
+		User: sshUsername,
 		Auth: []ssh.AuthMethod{
 			pubkey,
 		},
@@ -38,12 +38,12 @@ func Config() (*ssh.ClientConfig, error) {
 }
 
 // Client - returns a valid ssh client
-func Client() (*ssh.Client, error) {
-	cfg, err := Config()
+func Client(pubKeyPath string, sshUsername string, host string, port int) (*ssh.Client, error) {
+	cfg, err := Config(pubKeyPath, sshUsername)
 	if err != nil {
 		return nil, err
 	}
-	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ssh_host, ssh_port), cfg)
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, port), cfg)
 	if err != nil {
 		return nil, err
 	}

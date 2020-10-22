@@ -4,19 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/spf13/viper"
 	"github.com/sumanmukherjee03/gotils/cmd/utils"
 	"golang.org/x/crypto/ssh"
 )
 
-// NewRemoteShellConn - create a new remote shell connection object
-func NewSsmShellConn(interactive bool) error {
-	awsConn := NewAwsConn()
-	instanceId := awsConn.GetBastionInstance()
+// NewSsmShellConn - create a new remote shell connection object
+func NewSsmShellConn(awsConn *AwsConn, interactive bool) (*exec.Cmd, error) {
+	ssmPluginPath, err := exec.LookPath(viper.GetString("ssh.ssm_plugin_name"))
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Using session manager plugin at : ", ssmPluginPath)
 
+	instanceId := awsConn.GetSshTargetInstance()
 	input := &ssm.StartSessionInput{
 		DocumentName: aws.String("AWS-StartSSHSession"),
 		Parameters: map[string][]*string{
@@ -27,22 +33,48 @@ func NewSsmShellConn(interactive bool) error {
 
 	inputJson, err := json.Marshal(input)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	ssmsvc := ssm.New(awsConn.Session, awsConn.Config)
+	ssmsvc := ssm.New(awsConn.Session)
 	ssmSession, err := ssmsvc.StartSession(input)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	defer func() {
+		err := TerminateSsmSession(awsConn, *ssmSession.SessionId)
+		if err != nil {
+			utils.CheckErr(fmt.Sprintf("Failed to terminate ssm session: %s", err))
+		}
+	}()
 
 	ssmSessionJson, err := json.Marshal(ssmSession)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(inputJson)
-	fmt.Println(ssmSessionJson)
+	fmt.Println(string(inputJson))
+	fmt.Println(string(ssmSessionJson))
+	endpoint := ssmsvc.Client.Endpoint
+	proxyCmd := fmt.Sprintf("ProxyCommand=%s '%s' %s %s %s '%s' %s", "session-manager-plugin", string(ssmSessionJson), *awsConn.Session.Config.Region, "StartSession", "gotils_ssh", string(inputJson), endpoint)
+	sshArgs := []string{"-i", ssh_private_key_path, "-tt", "-o", proxyCmd, instanceId}
+	cmd, err := NewSshSessionSubprocess(nil, nil, nil, sshArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd, nil
+}
+
+func TerminateSsmSession(awsConn *AwsConn, sessionId string) error {
+	ssmsvc := ssm.New(awsConn.Session)
+	_, err := ssmsvc.TerminateSession(&ssm.TerminateSessionInput{
+		SessionId: &sessionId,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
