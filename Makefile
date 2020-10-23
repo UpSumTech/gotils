@@ -141,9 +141,9 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 			--build-arg NON_ROOT_USER=default \
 			-f Dockerfile \
 			-t $(BUILDER_IMAGE_NAME):$(TAG) .
-	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
+	$(AT)docker tag $(BUILDER_IMAGE_NAME):$(TAG) $(DOCKERHUB_ORGANIZATION)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)mkdir -p $(BUILDER_DATA_DIR) \
-		&& docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG) \
+		&& docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_ORGANIZATION)/$(BUILDER_IMAGE_NAME):$(TAG) \
 		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/$(REPO_NAME).tar.gz $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz \
 		&& curl -T $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
@@ -165,7 +165,7 @@ release: build
 	$(AT)curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/publish
 	$(AT)docker stop $(BUILDER_CONTAINER_NAME)
 	$(AT)docker rm $(BUILDER_CONTAINER_NAME)
-	$(AT)docker push $(DOCKERHUB_USERNAME)/$(BUILDER_IMAGE_NAME):$(TAG)
+	$(AT)docker push $(DOCKERHUB_ORGANIZATION)/$(BUILDER_IMAGE_NAME):$(TAG)
 	$(AT)git push origin $(TAG)
 ifeq ($(MAKECMDGOALS),release)
 	rm -rf $(TMPDIR_FOR_BUILD)
@@ -234,7 +234,7 @@ check_deps:
 checks_for_env_vars :
 	$(info [INFO] --- Checks that required env vars are present)
 	$(AT)test ! -z "$$GITHUB_USERNAME" \
-	&& test ! -z "$$DOCKERHUB_USERNAME" \
+	&& test ! -z "$$DOCKERHUB_ORGANIZATION" \
 	&& test ! -z "$$BINTRAY_USERNAME" \
 	&& test ! -z "$$BINTRAY_REPO_NAME" \
 	&& test ! -z "$$BINTRAY_API_KEY"
