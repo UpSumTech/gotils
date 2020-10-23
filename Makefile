@@ -131,6 +131,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 		&& docker build \
 			--no-cache \
 			--build-arg GITHUB_USERNAME=$(GITHUB_USERNAME) \
+			--build-arg GITHUB_ORGANIZATION=$(GITHUB_ORGANIZATION) \
 			--build-arg GIT_TAG=$(TAG) \
 			--build-arg BUILD_TIME=$(BUILD_TIME) \
 			--build-arg GIT_REF="$(GIT_REPO_URL)#$(GIT_SHA)" \
@@ -234,6 +235,7 @@ check_deps:
 checks_for_env_vars :
 	$(info [INFO] --- Checks that required env vars are present)
 	$(AT)test ! -z "$$GITHUB_USERNAME" \
+	&& test ! -z "$$GITHUB_ORGANIZATION" \
 	&& test ! -z "$$DOCKERHUB_ORGANIZATION" \
 	&& test ! -z "$$BINTRAY_USERNAME" \
 	&& test ! -z "$$BINTRAY_REPO_NAME" \
@@ -344,4 +346,3 @@ $(DEPS_STATEFILE) :
 	$(info [INFO] --- Installs the dependencies to run the make targets)
 	$(AT)mkdir -p .make
 	$(AT)touch $(DEPS_STATEFILE)
-
