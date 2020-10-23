@@ -48,7 +48,7 @@ HOTFIX := 0
 BINTRAY_API_URL="https://api.bintray.com"
 
 ifdef DEPLOY_GITHUB_TOKEN
-	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git
+	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GITHUB_ORGANIZATION)/$(REPO_NAME).git
 else
 	$(error "ERROR : Please export DEPLOY_GITHUB_TOKEN to your shell")
 endif
@@ -145,7 +145,7 @@ ifeq ($(IS_TAG_FROM_CLI), 0)
 	$(AT)mkdir -p $(BUILDER_DATA_DIR) \
 		&& docker run -u $(NON_ROOT_UID):$(NON_ROOT_GID) --name $(BUILDER_CONTAINER_NAME) $(DOCKERHUB_ORGANIZATION)/$(BUILDER_IMAGE_NAME):$(TAG) \
 		&& docker cp $(BUILDER_CONTAINER_NAME):/var/data/build/$(REPO_NAME).tar.gz $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz \
-		&& curl -T $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/
+		&& curl -T $(BUILDER_DATA_DIR)/$(REPO_NAME)-$(TAG).tar.gz -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_ORGANIZATION)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/
 	$(AT)git tag $(TAG) -am "Version:$(TAG),User:$(USER),Time:$(BUILD_TIME)"
 	$(info [INFO] --- Create annotated semver tag marking commit sha as a release candidate)
 else
@@ -162,7 +162,7 @@ endif
 # Pushes the git tag
 release: build
 	$(info [INFO] --- Create release candidate)
-	$(AT)curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/publish
+	$(AT)curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/content/$(BINTRAY_ORGANIZATION)/$(BINTRAY_REPO_NAME)/$(REPO_NAME)/$(TAG)/publish
 	$(AT)docker stop $(BUILDER_CONTAINER_NAME)
 	$(AT)docker rm $(BUILDER_CONTAINER_NAME)
 	$(AT)docker push $(DOCKERHUB_ORGANIZATION)/$(BUILDER_IMAGE_NAME):$(TAG)
