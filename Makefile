@@ -238,19 +238,20 @@ checks_for_env_vars :
 	&& test ! -z "$$GITHUB_ORGANIZATION" \
 	&& test ! -z "$$DOCKERHUB_ORGANIZATION" \
 	&& test ! -z "$$BINTRAY_USERNAME" \
+	&& test ! -z "$$BINTRAY_ORGANIZATION" \
 	&& test ! -z "$$BINTRAY_REPO_NAME" \
 	&& test ! -z "$$BINTRAY_API_KEY"
 
 # Checks that bintray repo is present
 checks_bintray_repo :
 	$(info [INFO] --- Checks that bintray repo is present)
-	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/repos/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME) | grep -i 'was not found'
+	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/repos/$(BINTRAY_ORGANIZATION)/$(BINTRAY_REPO_NAME) | grep -i 'was not found'
 
 # Checks that bintray package is present or create one
 checks_or_makes_bintray_package :
 	$(info [INFO] --- Checks that bintray repo is present)
-	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)/$(REPO_NAME) | grep -i 'was not found' \
-	|| curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -H "Content-Type: application/json" -H "Accept: application/json" -d '{"name": "$(REPO_NAME)", "licenses": ["MIT"], "vcs_url": "https://github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_USERNAME)/$(BINTRAY_REPO_NAME)
+	$(AT)! curl -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) $(BINTRAY_API_URL)/packages/$(BINTRAY_ORGANIZATION)/$(BINTRAY_REPO_NAME)/$(REPO_NAME) | grep -i 'was not found' \
+	|| curl -X POST -u$(BINTRAY_USERNAME):$(BINTRAY_API_KEY) -H "Content-Type: application/json" -H "Accept: application/json" -d '{"name": "$(REPO_NAME)", "licenses": ["MIT"], "vcs_url": "https://github.com/$(GITHUB_USERNAME)/$(REPO_NAME).git"}' $(BINTRAY_API_URL)/packages/$(BINTRAY_ORGANIZATION)/$(BINTRAY_REPO_NAME)
 
 # Checks is HEAD is detached
 # Checks if there are uncommited changes
