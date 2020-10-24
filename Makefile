@@ -45,7 +45,7 @@ REPO_NAME := $(shell basename $(ROOT_DIR))
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 WIP := 0
 HOTFIX := 0
-BINTRAY_API_URL="https://api.bintray.com"
+BINTRAY_API_URL=https://api.bintray.com
 
 ifdef DEPLOY_GITHUB_TOKEN
 	GIT_REPO_URL := https://$(DEPLOY_GITHUB_TOKEN)@github.com/$(GITHUB_ORGANIZATION)/$(REPO_NAME).git
