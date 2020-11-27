@@ -316,6 +316,20 @@
   revision = "8dc2790b029dc41e2b8ff772c63c26adbb1db70d"
 
 [[projects]]
+  digest = "1:90dff8c3434553687bfc88f832a9dce05e4fe15253936069ff672410cc91ac09"
+  name = "github.com/sumanmukherjee03/gotils"
+  packages = [
+    "cmd/awsutils",
+    "cmd/k8s",
+    "cmd/logparser",
+    "cmd/sshutils",
+    "cmd/utils",
+  ]
+  pruneopts = "UT"
+  revision = "633651b5cf0fe6b9dcbbfbf9fe2b4803b1e42b59"
+  version = "v2.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:ae38a56e386a576a45ca89870c379224062f1cc9a9763f7b165567f3f317f4a1"
   name = "golang.org/x/crypto"
@@ -577,6 +591,11 @@
     "github.com/mitchellh/go-homedir",
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
+    "github.com/sumanmukherjee03/gotils/cmd/awsutils",
+    "github.com/sumanmukherjee03/gotils/cmd/k8s",
+    "github.com/sumanmukherjee03/gotils/cmd/logparser",
+    "github.com/sumanmukherjee03/gotils/cmd/sshutils",
+    "github.com/sumanmukherjee03/gotils/cmd/utils",
     "golang.org/x/crypto/ssh",
     "gopkg.in/go-playground/validator.v9",
     "k8s.io/api/apps/v1",
